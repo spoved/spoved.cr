@@ -1,6 +1,6 @@
 # spoved
 
-TODO: Write a description here
+This repository contains shared tools and libraries to help development of crystal libraries easier.
 
 ## Installation
 
