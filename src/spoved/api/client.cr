@@ -1,6 +1,7 @@
-require "logger"
-require "halite"
+require "../logger"
 require "../error"
+
+require "halite"
 
 module Spoved
   class Api
@@ -11,6 +12,8 @@ module Spoved
     # client = Spoved::Api::Client.new("jsonplaceholder.typicode.com", scheme: "https", api_path: "")
     #
     class Client
+      spoved_logger
+
       property scheme : String
       property host : String
       property port : Int32?
@@ -27,12 +30,15 @@ module Spoved
       def initialize(
         @host : String, @port : Int32? = nil,
         @user : String? = nil, @pass : String? = nil,
-        @logger : Logger = Logger.new(STDOUT, level: Logger::WARN),
+        logger : Logger? = nil,
         @scheme = "https", @api_path = "api/v1",
         tls_verify_mode = OpenSSL::SSL::VerifyMode::PEER
       )
         @tls_client = OpenSSL::SSL::Context::Client.new
         @tls_client.verify_mode = tls_verify_mode
+        if logger
+          self.logger = logger
+        end
       end
 
       # URI helper function
@@ -42,11 +48,6 @@ module Spoved
         else
           URI.new(scheme: scheme, host: host, path: "/#{api_path}/#{path}", query: params.to_s, port: port)
         end
-      end
-
-      # Returns the logger
-      def logger : Logger
-        @logger
       end
 
       private def format_params(params)

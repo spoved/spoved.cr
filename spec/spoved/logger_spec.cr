@@ -1,7 +1,7 @@
 require "../spec_helper"
 
 class TestLogger
-  add_logger
+  spoved_logger
 end
 
 describe Spoved::Logger do
