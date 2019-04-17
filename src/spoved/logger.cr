@@ -1,7 +1,7 @@
 require "logger"
 require "colorize"
 
-macro add_logger
+macro spoved_logger
   def logger
     Spoved.logger
   end
