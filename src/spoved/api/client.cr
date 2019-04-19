@@ -79,6 +79,11 @@ module Spoved
         end
       end
 
+      # Make a DELETE request
+      def delete(path : String, params : String | Nil = nil)
+        make_delete_request(make_request_uri(path, params))
+      end
+
       # Make a GET request
       def get(path : String, params : String | Nil = nil)
         make_request(make_request_uri(path, params))
@@ -153,6 +158,15 @@ module Spoved
           logger.error(e, self.class.to_s)
         end
         raise e
+      rescue e
+        logger.error(resp.inspect)
+        logger.error(e, self.class.to_s)
+        raise e
+      end
+
+      private def make_delete_request(uri : URI)
+        self.logger.debug("DELETE: #{uri.to_s}", self.class.to_s)
+        halite.delete(uri.to_s, headers: default_headers, tls: @tls_client)
       rescue e
         logger.error(resp.inspect)
         logger.error(e, self.class.to_s)
