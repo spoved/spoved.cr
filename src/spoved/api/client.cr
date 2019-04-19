@@ -166,7 +166,7 @@ module Spoved
 
       private def make_delete_request(uri : URI)
         self.logger.debug("DELETE: #{uri.to_s}", self.class.to_s)
-        halite.delete(uri.to_s, headers: default_headers, tls: @tls_client)
+        resp = halite.delete(uri.to_s, headers: default_headers, tls: @tls_client)
       rescue e
         logger.error(resp.inspect)
         logger.error(e, self.class.to_s)
