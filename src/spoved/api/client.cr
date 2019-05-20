@@ -65,7 +65,7 @@ module Spoved
       end
 
       def stream_get(path : String, params : Hash(String, String))
-        resp = halite.get(make_request_uri(path, format_params(params)).to_s,
+        halite.get(make_request_uri(path, format_params(params)).to_s,
           headers: default_headers, tls: @tls_client) do |response|
           spawn do
             logger.warn("Spawn #{stream} start")
