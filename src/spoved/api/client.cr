@@ -36,6 +36,7 @@ module Spoved
       )
         @tls_client = OpenSSL::SSL::Context::Client.new
         @tls_client.verify_mode = tls_verify_mode
+
         if logger
           self.logger = logger
         end
@@ -57,46 +58,6 @@ module Spoved
           end
         end
         args
-      end
-
-      # Make a GET request
-      def get(path : String, params : Hash(String, String))
-        get(path, format_params(params))
-      end
-
-      def stream_get(path : String, params : Hash(String, String))
-        halite.get(make_request_uri(path, format_params(params)).to_s,
-          headers: default_headers, tls: @tls_client) do |response|
-          spawn do
-            logger.warn("Spawn #{stream} start")
-            while !stream.closed?
-              response.body_io.each_line do |line|
-                stream.send(line)
-              end
-            end
-            logger.warn("Spawn #{stream} end")
-          end
-        end
-      end
-
-      # Make a DELETE request
-      def delete(path : String, params : String | Nil = nil)
-        make_delete_request(make_request_uri(path, params))
-      end
-
-      # Make a GET request
-      def get(path : String, params : String | Nil = nil)
-        make_request(make_request_uri(path, params))
-      end
-
-      # Make a PATCH request
-      def patch(path : String, body = "", params : String | Nil = nil)
-        make_patch_request(make_request_uri(path, params), body)
-      end
-
-      # Make a POST request
-      def post(path : String, body = "", params : String | Nil = nil)
-        make_post_request(make_request_uri(path, params), body)
       end
 
       # Make a request with a string URI
@@ -128,51 +89,6 @@ module Spoved
         raise e
       end
 
-      private def make_post_request(uri : URI, body = "")
-        self.logger.debug("POST: #{uri.to_s} BODY: #{body}", self.class.to_s)
-        resp = halite.post(uri.to_s, raw: body, headers: default_headers, tls: @tls_client)
-        logger.debug(resp.body, self.class.to_s)
-        resp.body.empty? ? JSON.parse("{}") : resp.parse("json")
-      rescue e : JSON::ParseException
-        if (!resp.nil?)
-          logger.error("Unable to parse: #{resp.body}", self.class.to_s)
-        else
-          logger.error(e, self.class.to_s)
-        end
-        raise e
-      rescue e
-        logger.error(resp.inspect)
-        logger.error(e, self.class.to_s)
-        raise e
-      end
-
-      private def make_patch_request(uri : URI, body = "")
-        self.logger.debug("PATCH: #{uri.to_s} BODY: #{body}", self.class.to_s)
-        resp = halite.patch(uri.to_s, raw: body, headers: default_headers, tls: @tls_client)
-        logger.debug(resp.body, self.class.to_s)
-        resp.body.empty? ? JSON.parse("{}") : resp.parse("json")
-      rescue e : JSON::ParseException
-        if (!resp.nil?)
-          logger.error("Unable to parse: #{resp.body}", self.class.to_s)
-        else
-          logger.error(e, self.class.to_s)
-        end
-        raise e
-      rescue e
-        logger.error(resp.inspect)
-        logger.error(e, self.class.to_s)
-        raise e
-      end
-
-      private def make_delete_request(uri : URI)
-        self.logger.debug("DELETE: #{uri.to_s}", self.class.to_s)
-        resp = halite.delete(uri.to_s, headers: default_headers, tls: @tls_client)
-      rescue e
-        logger.error(resp.inspect)
-        logger.error(e, self.class.to_s)
-        raise e
-      end
-
       private def halite
         user = @user
         pass = @pass
@@ -185,3 +101,5 @@ module Spoved
     end
   end
 end
+
+require "./client/*"
