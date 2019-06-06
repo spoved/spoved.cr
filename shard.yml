@@ -14,3 +14,6 @@ dependencies:
 development_dependencies:
   vcr:
     github: spoved/vcr.cr
+  ameba:
+    github: veelenga/ameba
+    version: ~> 0.10.0
