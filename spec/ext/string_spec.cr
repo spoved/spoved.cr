@@ -24,7 +24,7 @@ describe String do
       "ellipsis":   "ellipses",
       "phenomenon": "phenomena",
       "criterion":  "criteria",
-      "metadum":    "metadata",
+      "metadatum":  "metadata",
 
       # Exemptions
       "fez":    "fezzes",

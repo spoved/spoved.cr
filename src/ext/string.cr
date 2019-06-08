@@ -19,8 +19,8 @@ class String
     return exemptions[self] if exemptions.has_key?(self)
 
     case self
-    when /^metadum$/
-      "#{self[0..-3]}ata"
+    when /^metadatum$/
+      "#{self[0..-5]}ata"
     when /\w{2}+us$/
       "#{self[0..-3]}i"
     when /is$/
