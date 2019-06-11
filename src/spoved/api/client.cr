@@ -14,17 +14,17 @@ module Spoved
     class Client
       spoved_logger
 
-      property scheme : String
+      property scheme : String = "https"
       property host : String
       property port : Int32?
-      property api_path : String
-      property default_headers : Hash(String, String)
-      getter stream = Channel(String).new
+      property api_path : String = "api/v1"
 
-      @default_headers = {
+      property default_headers : Hash(String, String) = {
         "Content-Type" => "application/json",
         "Accept"       => "application/json",
       }
+
+      getter stream = Channel(String).new
 
       # TODO: do correct tsl verification
       def initialize(
