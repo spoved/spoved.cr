@@ -25,6 +25,7 @@ module Spoved
       }
 
       getter stream = Channel(String).new
+      getter tls_client = OpenSSL::SSL::Context::Client.new
 
       # TODO: do correct tsl verification
       def initialize(
@@ -34,7 +35,6 @@ module Spoved
         @scheme = "https", @api_path = "api/v1",
         tls_verify_mode = OpenSSL::SSL::VerifyMode::PEER
       )
-        @tls_client = OpenSSL::SSL::Context::Client.new
         @tls_client.verify_mode = tls_verify_mode
 
         if logger
