@@ -30,7 +30,11 @@ module Spoved
       macro inherited
         def self.new(uri : URI)
           instance = {{@type.name.id}}.allocate
-          instance.initialize(host: uri.host, port: uri.port, scheme: uri.scheme)
+          instance.initialize(
+            host: uri.host.as(String),
+            port: uri.port,
+            scheme: uri.scheme.as(String)
+          )
           instance
         end
       end
