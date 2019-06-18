@@ -28,12 +28,13 @@ module Spoved
       getter tls_client = OpenSSL::SSL::Context::Client.new
 
       macro inherited
-        def self.new(uri : URI)
+        def self.new(uri : URI, **other)
           instance = {{@type.name.id}}.allocate
           instance.initialize(
             host: uri.host.as(String),
             port: uri.port,
-            scheme: uri.scheme.as(String)
+            scheme: uri.scheme.as(String),
+            args: other
           )
           instance
         end
@@ -45,7 +46,8 @@ module Spoved
         @user : String? = nil, @pass : String? = nil,
         logger : Logger? = nil,
         @scheme = "https", @api_path = "api/v1",
-        tls_verify_mode = OpenSSL::SSL::VerifyMode::PEER
+        tls_verify_mode = OpenSSL::SSL::VerifyMode::PEER,
+        args : NamedTuple? = nil
       )
         @tls_client.verify_mode = tls_verify_mode
 
