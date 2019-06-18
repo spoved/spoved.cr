@@ -2,6 +2,7 @@ require "../logger"
 require "../error"
 
 require "halite"
+require "../../ext/halite"
 
 module Spoved
   class Api
