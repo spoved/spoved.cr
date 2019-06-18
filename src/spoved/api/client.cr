@@ -58,7 +58,7 @@ module Spoved
       end
 
       # URI helper function
-      def make_request_uri(path : String, params : String | Nil = nil) : URI
+      def make_request_uri(path : String, params : String? = nil) : URI
         if (api_path.empty?)
           URI.new(scheme: scheme, host: host, path: "/#{path}", query: params.to_s, port: port)
         else
@@ -75,13 +75,22 @@ module Spoved
         args
       end
 
-      # Make a request with a string URI
-      private def make_request(path : String, params : String | Nil = nil)
-        make_request(make_request_uri(path, params))
+      def https?
+        scheme == "https"
       end
 
-      private def tls
-        scheme == "http" ? nil : @tls_client
+      def http?
+        scheme == "http"
+      end
+
+      # Wrapper to return tls only if scheme is https
+      private def tls : OpenSSL::SSL::Context::Client?
+        https? ? @tls_client : nil
+      end
+
+      # Make a request with a string URI
+      private def make_request(path : String, params : String? = nil)
+        make_request(make_request_uri(path, params))
       end
 
       # Make a request with a URI object
@@ -93,18 +102,7 @@ module Spoved
 
         logger.debug(resp.body, self.class.to_s)
 
-        if resp.success?
-          resp.body.empty? ? JSON.parse("{}") : resp.parse("json")
-        else
-          raise Error.new(resp.inspect)
-        end
-      rescue e : JSON::ParseException
-        if (!resp.nil?)
-          logger.error("Unable to parse: #{resp.body}", self.class.to_s)
-        else
-          logger.error(e, self.class.to_s)
-        end
-        raise e
+        resp
       rescue e
         logger.error(e, self.class.to_s)
         raise e

@@ -23,6 +23,22 @@ module Spoved
 
       # Make a GET request
       def get(path : String, params : String | Nil = nil)
+        resp = get_raw(path, params)
+        if resp.success?
+          resp.body.empty? ? JSON.parse("{}") : resp.parse("json")
+        else
+          raise Error.new(resp.inspect)
+        end
+      rescue e : JSON::ParseException
+        if (!resp.nil?)
+          logger.error("Unable to parse: #{resp.body}", self.class.to_s)
+        else
+          logger.error(e, self.class.to_s)
+        end
+        raise e
+      end
+
+      def get_raw(path : String, params : String | Nil = nil)
         make_request(make_request_uri(path, params))
       end
     end
