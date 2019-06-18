@@ -8,7 +8,7 @@ module Spoved
 
       private def make_patch_request(uri : URI, body = "")
         self.logger.debug("PATCH: #{uri.to_s} BODY: #{body}", self.class.to_s)
-        resp = halite.patch(uri.to_s, raw: body, headers: default_headers, tls: @tls_client)
+        resp = halite.patch(uri.to_s, raw: body, headers: default_headers, tls: tls)
         logger.debug(resp.body, self.class.to_s)
         resp.body.empty? ? JSON.parse("{}") : resp.parse("json")
       rescue e : JSON::ParseException

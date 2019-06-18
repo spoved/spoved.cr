@@ -77,12 +77,16 @@ module Spoved
         make_request(make_request_uri(path, params))
       end
 
+      private def tls
+        scheme == "http" ? nil : @tls_client
+      end
+
       # Make a request with a URI object
       private def make_request(uri : URI)
         self.logger.debug("GET: #{uri.to_s}", self.class.to_s)
         self.logger.debug("GET: #{default_headers}", self.class.to_s)
 
-        resp = halite.get(uri.to_s, headers: default_headers, tls: (scheme == "http" ? nil : @tls_client))
+        resp = halite.get(uri.to_s, headers: default_headers, tls: tls)
 
         logger.debug(resp.body, self.class.to_s)
 
