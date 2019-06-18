@@ -82,8 +82,10 @@ module Spoved
         self.logger.debug("GET: #{uri.to_s}", self.class.to_s)
         self.logger.debug("GET: #{default_headers}", self.class.to_s)
 
-        resp = halite.get(uri.to_s, headers: default_headers, tls: @tls_client)
+        resp = halite.get(uri.to_s, headers: default_headers, tls: (scheme == "http" ? nil : @tls_client))
+
         logger.debug(resp.body, self.class.to_s)
+
         if resp.success?
           resp.body.empty? ? JSON.parse("{}") : resp.parse("json")
         else
