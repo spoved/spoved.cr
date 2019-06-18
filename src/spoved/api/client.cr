@@ -27,7 +27,7 @@ module Spoved
       getter stream = Channel(String).new
       getter tls_client = OpenSSL::SSL::Context::Client.new
 
-      macro extended
+      macro inherited
         def self.new(uri : URI)
           instance = {{@type.name.id}}.allocate
           instance.initialize(host: uri.host, port: uri.port, scheme: uri.scheme)
