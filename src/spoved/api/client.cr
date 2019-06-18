@@ -27,6 +27,12 @@ module Spoved
       getter stream = Channel(String).new
       getter tls_client = OpenSSL::SSL::Context::Client.new
 
+      def initialize(uri : URI)
+        @host = uri.host
+        @port = uri.port
+        @scheme = uri.scheme
+      end
+
       # TODO: do correct tsl verification
       def initialize(
         @host : String, @port : Int32? = nil,
