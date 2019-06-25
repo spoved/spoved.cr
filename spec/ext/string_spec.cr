@@ -45,4 +45,13 @@ describe String do
       end
     end
   end
+
+  describe "#klassify" do
+    it "can convert strings to klasses" do
+      "DoesWhatItSaysOnTheTin".klassify.should eq "Does::What::It::Says::On::The::Tin"
+      "PartyInTheUSA".klassify.should eq "Party::In::The::USA"
+      "HTTP_CLIENT".klassify.should eq "HTTP::CLIENT"
+      "InterestingImage".klassify.should eq "Interesting::Image"
+    end
+  end
 end
