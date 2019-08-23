@@ -21,20 +21,24 @@ end
 
 module Spoved
   class Logger < ::Logger
-    private SPOVED_FORMATTER = Formatter.new do |severity, datetime, progname, message, io|
-      label = severity.unknown? ? "ANY" : severity.to_s
-
-      with_color.colorize(Spoved::Logger.get_color(severity)).surround(io) do
-        io << label[0] << ", [" << datetime << " #" << Process.pid << "] "
-        io << label.rjust(5) << " -- " << progname << ": " << message
-      end
-    end
+    private SPOVED_FORMATTER = ->format(Severity, Time, String, String, IO)
 
     # Creates a new logger that will log to the given *io*.
     # If *io* is `nil` then all log calls will be silently ignored.
     def initialize(@io : IO?, @level = Severity::INFO, @formatter = SPOVED_FORMATTER, @progname = "")
       @closed = false
       @mutex = Mutex.new
+    end
+
+    private def self.format(severity, datetime, progname, message, io)
+      label = severity.unknown? ? "ANY" : severity.to_s
+
+      color = ::Spoved::Logger.get_color(severity)
+
+      with_color.colorize(color).surround(io) do
+        io << label[0] << ", [" << datetime << " #" << Process.pid << "] "
+        io << label.rjust(5) << " -- " << progname << ": " << message
+      end
     end
 
     def self.get_color(severity)
