@@ -26,4 +26,8 @@ class Spoved::DB::Model::MySQL
   def self.close
     db.close unless @@db.nil?
   end
+
+  def self.db_uri
+    MYSQL_URI
+  end
 end
