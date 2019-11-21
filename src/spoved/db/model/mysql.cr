@@ -11,10 +11,11 @@ class Spoved::DB::Model::MySQL
   MYSQL_DB_NAME = ENV["CRYSTAL_ENV"]? ? "#{ENV["MYSQL_DB_NAME"]}_#{ENV["CRYSTAL_ENV"]?}" : "#{ENV["MYSQL_DB_NAME"]}"
 
   MYSQL_URI = URI.new(
-    "mysql",
-    ENV["MYSQL_HOST"]? || "localhost",
-    (ENV["MYSQL_PORT"]? || 3306).to_i,
-    MYSQL_DB_NAME,
+    scheme: "mysql",
+    host: ENV["MYSQL_HOST"]? || "localhost",
+    port: (ENV["MYSQL_PORT"]? || 3306).to_i,
+    path: "\\" + MYSQL_DB_NAME,
+    # query: "schema=#{MYSQL_DB_NAME}",
     user: ENV["MYSQL_USER"]? || "root",
     password: ENV["MYSQL_PASS"]? || ""
   )
