@@ -8,11 +8,13 @@ require "mysql"
 class Spoved::DB::Model::MySQL
   alias DataHash = Hash(String, Array(JSON::Any) | Bool | Float64 | Hash(String, JSON::Any) | Int64 | String | Nil)
 
+  MYSQL_DB_NAME = ENV["CRYSTAL_ENV"]? ? "meco_#{ENV["CRYSTAL_ENV"]?}" : "meco"
+
   MYSQL_URI = URI.new(
     "mysql",
     ENV["MYSQL_HOST"]? || "localhost",
     (ENV["MYSQL_PORT"]? || 3306).to_i,
-    ENV["MYSQL_DB"]? || "",
+    MYSQL_DB_NAME,
     user: ENV["MYSQL_USER"]? || "root",
     password: ENV["MYSQL_PASS"]? || ""
   )
@@ -25,6 +27,10 @@ class Spoved::DB::Model::MySQL
 
   def self.close
     db.close unless @@db.nil?
+  end
+
+  def self.db_name
+    MYSQL_DB_NAME
   end
 
   def self.db_uri
