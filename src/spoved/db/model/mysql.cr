@@ -8,7 +8,7 @@ require "mysql"
 class Spoved::DB::Model::MySQL
   alias DataHash = Hash(String, Array(JSON::Any) | Bool | Float64 | Hash(String, JSON::Any) | Int64 | String | Nil)
 
-  MYSQL_DB_NAME = ENV["CRYSTAL_ENV"]? ? "meco_#{ENV["CRYSTAL_ENV"]?}" : "meco"
+  MYSQL_DB_NAME = ENV["CRYSTAL_ENV"]? ? "#{ENV["MYSQL_DB_NAME"]}_#{ENV["CRYSTAL_ENV"]?}" : "#{ENV["MYSQL_DB_NAME"]}"
 
   MYSQL_URI = URI.new(
     "mysql",
