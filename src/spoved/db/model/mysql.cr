@@ -17,10 +17,10 @@ class Spoved::DB::Model::MySQL
     password: ENV["MYSQL_PASS"]? || ""
   )
 
-  @@db : DB::Database?
+  @@db : ::DB::Database?
 
-  def self.db : DB::Database
-    @@db ||= DB.open MYSQL_URI
+  def self.db : ::DB::Database
+    @@db ||= ::DB.open MYSQL_URI
   end
 
   def self.close
