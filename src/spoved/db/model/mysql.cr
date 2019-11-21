@@ -1,3 +1,7 @@
+require "json"
+require "uuid"
+require "uuid/json"
+
 require "db"
 require "mysql"
 
@@ -7,7 +11,7 @@ class Spoved::DB::Model::MySQL
   MYSQL_URI = URI.new(
     "mysql",
     ENV["MYSQL_HOST"]? || "localhost",
-    ENV["MYSQL_PORT"].to_i || 3306,
+    (ENV["MYSQL_PORT"]? || 3306).to_i,
     ENV["MYSQL_DB"]? || "",
     user: ENV["MYSQL_USER"]? || "root",
     password: ENV["MYSQL_PASS"]? || ""
