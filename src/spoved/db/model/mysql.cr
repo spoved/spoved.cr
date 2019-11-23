@@ -4,10 +4,9 @@ require "uuid/json"
 
 require "db"
 require "mysql"
+require "../model"
 
-class Spoved::DB::Model::MySQL
-  abstract def logger
-
+class Spoved::DB::Model::MySQL < Spoved::DB::Model
   alias DataHash = Hash(String, Array(JSON::Any) | Bool | Float64 | Hash(String, JSON::Any) | Int64 | String | Nil)
 
   MYSQL_DB_NAME = ENV["CRYSTAL_ENV"]? ? "#{ENV["MYSQL_DB_NAME"]}_#{ENV["CRYSTAL_ENV"]?}" : "#{ENV["MYSQL_DB_NAME"]}"
