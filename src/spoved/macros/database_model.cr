@@ -93,7 +93,7 @@ macro database_model(table, primary_id, columns, use_expire = false)
   end
 
   private def db
-    Portal::Model.db
+    self.class.db
   end
 
   # The database table name
@@ -351,5 +351,11 @@ macro database_model(table, primary_id, columns, use_expire = false)
     update!
   rescue ex
     logger.error(ex)
+  end
+
+  def self.create(**args)
+    obj = self.new(**args)
+    obj.save
+    obj
   end
 end
