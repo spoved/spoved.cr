@@ -49,8 +49,9 @@ macro database_model(table, primary_id, columns, use_expire = false)
   {% end %}
 
   {% if use_expire %}
-    EXPIRE_WHERE = " start_time <= NOW() AND (end_time > NOW() OR end_time = 0) "
+    EXPIRE_WHERE_EXCLUDE = " start_time <= NOW() AND (end_time > NOW() OR end_time = 0) "
     EXPIRE_DELETE = " end_time = NOW() "
+    EXPIRE_WHERE_SELECT = " start_time <= NOW() AND (end_time <= NOW() AND end_time != 0) "
   {% end %}
 
   RES_STRUCTURE = {
@@ -142,11 +143,20 @@ macro database_model(table, primary_id, columns, use_expire = false)
   end
 
   # Gather all records from the database
-  private def self._query_all(where = "")
+  private def self._query_all(
+    where = "",
+    {% if use_expire %}
+      expired = false
+    {% end %}
+    )
 
     {% if use_expire %}
+      if expired
+        where = "WHERE #{EXPIRE_WHERE_SELECT}"
+      end
+
       if where == ""
-        where =  "WHERE #{EXPIRE_WHERE}"
+        where =  "WHERE #{EXPIRE_WHERE_EXCLUDE}"
       end
     {% end %}
 
@@ -173,6 +183,9 @@ macro database_model(table, primary_id, columns, use_expire = false)
     {% for name, val in columns %}
       {{name}} : {{val}}? = nil,
     {% end %}
+    {% if use_expire %}
+      expired = false
+    {% end %}
   )
 
     subs = {
@@ -194,8 +207,13 @@ macro database_model(table, primary_id, columns, use_expire = false)
           io << " AND "
         end
       {% end %}
+
       {% if use_expire %}
-        io << EXPIRE_WHERE
+        if expired
+          io << EXPIRE_WHERE_SELECT
+        else
+          io << EXPIRE_WHERE_EXCLUDE
+        end
       {% end %}
     end
     logger.debug(where.chomp(" AND "), "{{@type}}.query")
@@ -207,7 +225,7 @@ macro database_model(table, primary_id, columns, use_expire = false)
   def self.find(id) : {{@type}}?
     {% if use_expire %}
     sql = "SELECT `#{{{@type}}.columns.join("`,`")}` FROM `#{self.table_name}` "\
-      "WHERE `#{self.primary_key_name}` = ? AND #{EXPIRE_WHERE}"
+      "WHERE `#{self.primary_key_name}` = ? AND #{EXPIRE_WHERE_EXCLUDE}"
     {% else %}
     sql = "SELECT `#{{{@type}}.columns.join("`,`")}` FROM `#{self.table_name}` "\
       "WHERE `#{self.primary_key_name}` = ?"
