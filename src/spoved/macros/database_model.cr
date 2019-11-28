@@ -331,7 +331,7 @@ macro database_model(table, primary_id, columns, use_expire = false)
   end
 
   def set(%name : Symbol | String, %value : ValTypes)
-    # raise "Cant change primary key" if %name.to_s == {{@type}}.primary_key_name
+    # raise "Can not change primary key" if %name.to_s == {{@type}}.primary_key_name
     logger.debug "#{primary_key_value} : setting #{%name} to #{%value}"
 
     case %name.to_s
@@ -349,7 +349,7 @@ macro database_model(table, primary_id, columns, use_expire = false)
   def update_attrs(changes : Hash(String | Symbol, ValTypes))
     changes.each do |n, v|
       raise "Unknown column" unless {{@type}}.columns.includes?(n.to_s)
-      raise "Cant change primary key" if n.to_s == {{@type}}.primary_key_name
+      raise "Can not change primary key" if n.to_s == {{@type}}.primary_key_name
 
       self.set(n, v)
     end
@@ -357,7 +357,7 @@ macro database_model(table, primary_id, columns, use_expire = false)
 
   def save!
     if self.is_expired
-      raise "Cant save expired record!"
+      raise "Can not save expired record!"
     end
     self._insert_record
   end
@@ -380,7 +380,7 @@ macro database_model(table, primary_id, columns, use_expire = false)
 
   def update!
     if self.is_expired
-      raise "Cant update expired record!"
+      raise "Can not update expired record!"
     end
     self._update_record
   end
