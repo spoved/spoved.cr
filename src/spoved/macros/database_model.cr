@@ -1,5 +1,9 @@
 macro database_model(table, primary_id, columns, use_expire = false)
 
+  {% if use_expire %}
+    private property is_expired : Bool
+  {% end %}
+
   def initialize(
       {% for name, val in columns %}
         {% if val.id == "UUID" || val.id == "JSON::Any" %}
@@ -7,6 +11,9 @@ macro database_model(table, primary_id, columns, use_expire = false)
         {% else %}
           {{name}} : {{val}},
         {% end %}
+      {% end %}
+      {% if use_expire %}
+        @is_expired = false
       {% end %}
     )
     {% for name, val in columns %}
@@ -118,10 +125,13 @@ macro database_model(table, primary_id, columns, use_expire = false)
   end
 
   # Will convert the `{{@type}}::NamedVars` into an object
-  protected def self.from_named_truple(res : NamedVars) : {{ @type }}
+  protected def self.from_named_truple(res : NamedVars {% if use_expire %}, expired : Bool = false {% end %}) : {{ @type }}
     {{@type}}.new(
       {% for name, val in columns %}
         {{name}}: res[:{{name}}],
+      {% end %}
+      {% if use_expire %}
+      is_expired: expired,
       {% end %}
     )
   end
@@ -218,7 +228,7 @@ macro database_model(table, primary_id, columns, use_expire = false)
     end
     logger.debug(where.chomp(" AND "), "{{@type}}.query")
 
-    self._query_all(where.chomp(" AND ")).map{ |x| {{@type}}.from_named_truple(x) }
+    self._query_all(where.chomp(" AND ")).map{ |x| {{@type}}.from_named_truple(x {% if use_expire %}, expired {% end %}) }
   end
 
   # Find a single record based on primary key
@@ -252,9 +262,13 @@ macro database_model(table, primary_id, columns, use_expire = false)
 
     logger.debug(sql)
     db.exec(sql, _{{primary_id.id}}_for_mysql)
+    {% if use_expire %}
+      @is_expired = true
+    {% end %}
   end
 
   {% if use_expire %}
+  # TODO: Validate this behavior
   private def _unexpire_record
     if {{@type}}.query(uuid: self.uuid).empty?
       false
@@ -342,6 +356,9 @@ macro database_model(table, primary_id, columns, use_expire = false)
   end
 
   def save!
+    if self.is_expired
+      raise "Cant save expired record!"
+    end
     self._insert_record
   end
 
@@ -362,6 +379,9 @@ macro database_model(table, primary_id, columns, use_expire = false)
   end
 
   def update!
+    if self.is_expired
+      raise "Cant update expired record!"
+    end
     self._update_record
   end
 
