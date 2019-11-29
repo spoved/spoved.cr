@@ -1,6 +1,8 @@
 macro database_model(table, primary_id, columns, use_expire = false)
+  include JSON::Serializable
 
   {% if use_expire %}
+    @[JSON::Field(ignore: true)]
     private property is_expired : Bool
   {% end %}
 
