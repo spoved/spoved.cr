@@ -10,7 +10,6 @@ module Spoved
         self.logger.debug("DELETE: #{uri.to_s}", self.class.to_s)
         halite.delete(uri.to_s, headers: default_headers, tls: tls)
       rescue e
-        logger.error(resp.inspect)
         logger.error(e, self.class.to_s)
         raise e
       end
