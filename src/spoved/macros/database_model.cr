@@ -177,7 +177,7 @@ macro database_model(table, primary_id, columns, use_expire = false)
     {% end %}
 
     sql = "SELECT `#{{{@type}}.columns.join("`,`")}` FROM `#{self.table_name}` #{where}"
-    db.query_all(sql, as: RES_STRUCTURE)
+    db_ro.query_all(sql, as: RES_STRUCTURE)
   end
 
   # Return an array containing all of the `{{@type}}` records
@@ -248,7 +248,7 @@ macro database_model(table, primary_id, columns, use_expire = false)
     {% end %}
 
     logger.debug(sql, "self.find")
-    res = db.query_one(sql, id, as: RES_STRUCTURE)
+    res = db_ro.query_one(sql, id, as: RES_STRUCTURE)
 
     {{@type}}.from_named_truple(res)
   rescue ex
