@@ -23,10 +23,25 @@ class Spoved::DB::Model::MySQL < Spoved::DB::Model
     password: ENV["MYSQL_PASS"]? || ""
   )
 
+  MYSQL_RO_URI = URI.new(
+    scheme: "mysql",
+    host: ENV["MYSQL_RO_HOST"]? || ENV["MYSQL_HOST"]? || "localhost",
+    port: (ENV["MYSQL_RO_PORT"]? || ENV["MYSQL_PORT"]? || 3306).to_i,
+    path: "\\" + MYSQL_DB_NAME,
+    # query: "schema=#{MYSQL_DB_NAME}",
+    user: ENV["MYSQL_USER"]? || "root",
+    password: ENV["MYSQL_PASS"]? || ""
+  )
+
   @@db : ::DB::Database?
+  @@db_ro : ::DB::Database?
 
   def self.db : ::DB::Database
     @@db ||= ::DB.open MYSQL_URI
+  end
+
+  def self.db_ro : ::DB::Database
+    @@db_ro ||= ::DB.open MYSQL_RO_URI
   end
 
   def self.close

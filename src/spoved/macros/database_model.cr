@@ -106,6 +106,10 @@ macro database_model(table, primary_id, columns, use_expire = false)
     self.class.db
   end
 
+  private def db_ro
+    self.class.db_ro
+  end
+
   # The database table name
   protected def self.table_name : String
     {{table.id.stringify}}
