@@ -7,7 +7,7 @@ module Spoved::SystemCmd
   end
 
   def system_cmd(command)
-    logger.debug("Running command : #{command}", self.class.to_s)
+    logger.debug { "Running command : #{command}" }
 
     process = Process.new(
       command,
@@ -28,11 +28,11 @@ module Spoved::SystemCmd
     }
 
     if result[:status]
-      logger.debug(result[:output].chomp, self.class.to_s) unless result[:output].chomp.empty?
-      logger.error(result[:error].chomp, self.class.to_s) unless result[:error].chomp.empty?
+      logger.debug { result[:output].chomp } unless result[:output].chomp.empty?
+      logger.error { result[:error].chomp } unless result[:error].chomp.empty?
     else
-      logger.debug(result[:output].chomp, self.class.to_s) unless result[:output].chomp.empty?
-      logger.error(result[:error].chomp, self.class.to_s) unless result[:error].chomp.empty?
+      logger.debug { result[:output].chomp } unless result[:output].chomp.empty?
+      logger.error { result[:error].chomp } unless result[:error].chomp.empty?
     end
 
     result

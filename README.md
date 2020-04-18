@@ -18,20 +18,19 @@ This repository contains shared tools and libraries to help development of cryst
 
 ### Spoved::Logger
 
-You can use this exactly like the base class `::Logger`:
+Will colorize your STDOUT logs
 
 ```crystal
 require "spoved/logger"
 
-logger = Spoved::Logger.new(STDOUT)
-logger.level = Logger::DEBUG
+spoved_logger
 
-logger.debug("this is an debug msg")
-logger.info("this is an info msg")
-logger.warn("this is an warn msg")
-logger.error("this is an error msg")
-logger.fatal("this is an fatal msg")
-logger.unknown("this is an unknown msg")
+Log.debug { "this is an debug msg" }
+Log.info { "this is an info msg" }
+Log.warn { "this is an warn msg" }
+Log.error { "this is an error msg" }
+Log.fatal { "this is an fatal msg" }
+Log.unknown { "this is an unknown msg" }
 ```
 
 Or you can use the `spoved_logger` to automatically add the logger methods to any class:
@@ -44,7 +43,7 @@ class TestObj
 end
 
 obj = TestObj.new
-obj.logger.debug("I can log a debug now")
+obj.logger.debug { "I can log a debug in color now" }
 ```
 
 This also adds a class/module level logger:
@@ -52,11 +51,11 @@ This also adds a class/module level logger:
 ```crystal
 require "spoved/logger"
 
-class TestObj
-  spoved_logger
+module TestModule
+  spoved_logger level: :debug, io: STDOUT
 end
 
-TestObj.logger.debug("I can log a debug now")
+TestModule.logger.debug { "I can log a module debug now" }
 ```
 
 ### Spoved::Api::Client

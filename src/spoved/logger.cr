@@ -1,87 +1,69 @@
-require "logger"
+require "log"
 require "colorize"
 
-macro spoved_logger
+macro spoved_logger(level = :debug, io = STDOUT)
+  {% if @type.id == "main" %}
+    {% if io.id == "STDOUT" %}
+      ::Log.builder.bind("*", {{level}}, Spoved::ColorizedBackend.new({{io}}))
+    {% else %}
+      ::Log.builder.bind("*", {{level}}, Log::IOBackend.new({{io}}))
+    {% end %}
+  {% else %}
+
+
+    {% if io.id == "STDOUT" %}
+      ::Log.builder.bind({{@type.id}}.name.underscore.gsub("::", "."), {{level}}, Spoved::ColorizedBackend.new({{io}}) )
+    {% else %}
+      ::Log.builder.bind({{@type.id}}.name.underscore.gsub("::", "."), {{level}}, Log::IOBackend.new({{io}}))
+    {% end %}
+
+  @@logger = ::Log.for( {{@type.id}} )
+
   def logger
-    Spoved.logger
+    @@logger
   end
-
-  def logger=(value : ::Logger)
-    Spoved.logger = value
-  end
-
-  def self.logger
-    Spoved.logger
-  end
-
-  def self.logger=(value : ::Logger)
-    Spoved.logger = value
-  end
-end
-
-module Spoved
-  class Logger < ::Logger
-    private SPOVED_FORMATTER = ->format(Severity, Time, String, String, IO)
-
-    # Creates a new logger that will log to the given *io*.
-    # If *io* is `nil` then all log calls will be silently ignored.
-    def initialize(@io : IO?, @level = Severity::INFO, @formatter = SPOVED_FORMATTER, @progname = "")
-      @closed = false
-      @mutex = Mutex.new
-    end
-
-    private def self.format(severity, datetime, progname, message, io)
-      label = severity.unknown? ? "ANY" : severity.to_s
-
-      color = ::Spoved::Logger.get_color(severity)
-
-      with_color.colorize(color).surround(io) do
-        io << label[0] << ", [" << datetime << " #" << Process.pid << "] "
-        io << label.rjust(5) << " -- " << progname << ": " << message
-      end
-    end
-
-    def self.get_color(severity)
-      case severity
-      when ::Logger::DEBUG
-        :cyan
-      when ::Logger::INFO
-        :magenta
-      when ::Logger::WARN
-        :yellow
-      when ERROR
-        :red
-      when ::Logger::FATAL
-        :light_red
-      when ::Logger::UNKNOWN
-        :light_gray
-      else
-        :default
-      end
-    end
-
-    private def write(severity, datetime, progname, message)
-      io = @io
-      return unless io
-
-      progname_to_s = progname.to_s
-      message_to_s = message.to_s
-
-      @mutex.synchronize do
-        formatter.call(severity, datetime, progname_to_s, message_to_s, io)
-        io.puts
-        io.flush
-      end
-    end
-  end
-
-  @@logger : ::Logger = Spoved::Logger.new(STDOUT)
 
   def self.logger
     @@logger
   end
 
-  def self.logger=(value : ::Logger)
-    @@logger = value
+  {% end %}
+end
+
+module Spoved
+  Log = ::Log.for(self)
+
+  class ColorizedBackend < ::Log::IOBackend
+    private def formater(entry : ::Log::Entry, io : IO)
+      color = ::Spoved::ColorizedBackend.get_color(entry.severity)
+      Colorize.with.colorize(color).surround(io) do
+        default_format(entry)
+      end
+    end
+
+    def initialize(@io = STDOUT)
+      @mutex = Mutex.new(:unchecked)
+      @progname = File.basename(PROGRAM_NAME)
+      @formatter = ->formater(::Log::Entry, IO)
+    end
+
+    def self.get_color(severity)
+      case severity
+      when ::Log::Severity::Debug
+        :cyan
+      when ::Log::Severity::Info
+        :magenta
+      when ::Log::Severity::Warning
+        :yellow
+      when ::Log::Severity::Error
+        :red
+      when ::Log::Severity::Fatal
+        :light_red
+      when ::Log::Severity::Verbose
+        :light_gray
+      else
+        :default
+      end
+    end
   end
 end

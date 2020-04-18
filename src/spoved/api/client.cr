@@ -11,9 +11,13 @@ module Spoved
     #
     # ```
     # client = Spoved::Api::Client.new("jsonplaceholder.typicode.com", scheme: "https", api_path: "")
-    #
+    # ```
     class Client
       spoved_logger
+
+      macro inherited
+        spoved_logger
+      end
 
       property scheme : String = "https"
       property host : String
@@ -45,16 +49,11 @@ module Spoved
       def initialize(
         @host : String, @port : Int32? = nil,
         @user : String? = nil, @pass : String? = nil,
-        logger : Logger? = nil,
         @scheme = "https", @api_path = "api/v1",
         tls_verify_mode = OpenSSL::SSL::VerifyMode::PEER,
         args : NamedTuple? = nil
       )
         @tls_client.verify_mode = tls_verify_mode
-
-        if logger
-          self.logger = logger
-        end
       end
 
       # URI helper function
@@ -95,16 +94,16 @@ module Spoved
 
       # Make a request with a URI object
       private def make_request(uri : URI)
-        self.logger.debug("GET: #{uri.to_s}", self.class.to_s)
-        self.logger.debug("GET: #{default_headers}", self.class.to_s)
+        self.logger.debug { "GET: #{uri.to_s}" }
+        self.logger.debug { "GET: #{default_headers}" }
 
         resp = halite.get(uri.to_s, headers: default_headers, tls: tls)
 
-        logger.debug(resp.body, self.class.to_s)
+        logger.debug { resp.body }
 
         resp
       rescue e
-        logger.error(e, self.class.to_s)
+        logger.error { e }
         raise e
       end
 

@@ -7,9 +7,9 @@ module Spoved
         resp.body.empty? ? JSON.parse("{}") : resp.parse("json")
       rescue e : JSON::ParseException
         if (!resp.nil?)
-          logger.error("Unable to parse: #{resp.body}", self.class.to_s)
+          logger.error { "Unable to parse: #{resp.body}" }
         else
-          logger.error(e, self.class.to_s)
+          logger.error { e }
         end
         raise e
       end
@@ -19,13 +19,13 @@ module Spoved
       end
 
       private def make_post_request(uri : URI, body = "")
-        self.logger.debug("POST: #{uri.to_s} BODY: #{body}", self.class.to_s)
+        self.logger.debug { "POST: #{uri.to_s} BODY: #{body}" }
         resp = halite.post(uri.to_s, raw: body, headers: default_headers, tls: tls)
-        logger.debug(resp.body, self.class.to_s)
+        logger.debug { resp.body }
         resp
       rescue e
-        logger.error(resp.inspect)
-        logger.error(e, self.class.to_s)
+        logger.error { resp.inspect }
+        logger.error { e }
         raise e
       end
     end

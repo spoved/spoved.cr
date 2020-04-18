@@ -10,13 +10,13 @@ module Spoved
         halite.get(make_request_uri(path, format_params(params)).to_s,
           headers: default_headers, tls: tls) do |response|
           spawn do
-            logger.warn("Spawn #{stream} start")
+            logger.warn { "Spawn #{stream} start" }
             while !stream.closed?
               response.body_io.each_line do |line|
                 stream.send(line)
               end
             end
-            logger.warn("Spawn #{stream} end")
+            logger.warn { "Spawn #{stream} end" }
           end
         end
       end
@@ -31,9 +31,9 @@ module Spoved
         end
       rescue e : JSON::ParseException
         if (!resp.nil?)
-          logger.error("Unable to parse: #{resp.body}", self.class.to_s)
+          logger.error { "Unable to parse: #{resp.body}" }
         else
-          logger.error(e, self.class.to_s)
+          logger.error { e }
         end
         raise e
       end

@@ -184,7 +184,7 @@ macro database_model(table, primary_id, columns, use_expire = false)
   def self.all : Array({{@type}})
     self._query_all.map{ |x| {{@type}}.from_named_truple(x) }
   rescue ex
-    logger.error(ex)
+    logger.error { ex }
     Array({{@type}}).new
   end
 
@@ -232,7 +232,7 @@ macro database_model(table, primary_id, columns, use_expire = false)
         end
       {% end %}
     end
-    logger.debug(where.chomp(" AND "), "{{@type}}.query")
+    logger.debug { where.chomp(" AND ") }
 
     self._query_all(where.chomp(" AND ")).map{ |x| {{@type}}.from_named_truple(x {% if use_expire %}, expired {% end %}) }
   end
@@ -247,12 +247,12 @@ macro database_model(table, primary_id, columns, use_expire = false)
       "WHERE `#{self.primary_key_name}` = ?"
     {% end %}
 
-    logger.debug(sql, "self.find")
+    logger.debug { sql }
     res = db_ro.query_one(sql, id, as: RES_STRUCTURE)
 
     {{@type}}.from_named_truple(res)
   rescue ex
-    logger.error(ex, "self.find")
+    logger.error { ex }
     nil
   end
 
@@ -266,7 +266,7 @@ macro database_model(table, primary_id, columns, use_expire = false)
         "WHERE `#{{{@type}}.primary_key_name}` = ?"
     {% end %}
 
-    logger.debug(sql)
+    logger.debug { sql }
     db.exec(sql, _{{primary_id.id}}_for_mysql)
     {% if use_expire %}
       @is_expired = true
@@ -282,12 +282,12 @@ macro database_model(table, primary_id, columns, use_expire = false)
       sql = "UPDATE `#{ {{@type}}.table_name }` "\
         "SET end_time = 0 "\
         "WHERE `#{{{@type}}.primary_key_name}` = ?"
-      logger.debug(sql)
+      logger.debug { sql }
       db.exec(sql, _{{primary_id.id}}_for_mysql)
       true
     end
   rescue ex
-    logger.error(ex, "_unexpire_record")
+    logger.error { ex }
     false
   end
   {% end %}
@@ -300,7 +300,7 @@ macro database_model(table, primary_id, columns, use_expire = false)
     {% end %}
 
     sql = "INSERT INTO `#{ {{@type}}.table_name }` SET #{%cols.join(",")}"
-    logger.debug(sql)
+    logger.debug { sql }
     db.exec(sql,
       {% for key in columns.keys %}
       _{{key}}_for_mysql ,
@@ -314,7 +314,7 @@ macro database_model(table, primary_id, columns, use_expire = false)
     sql = "UPDATE `#{{{@type}}.table_name}` SET #{%cols.join(",")} "\
       "WHERE `#{{{@type}}.primary_key_name}` = ?"
 
-    logger.debug(sql)
+    logger.debug { sql }
     db.exec(sql,
       {% for key in columns.keys.reject { |x| x.id == primary_id.id } %}
       _{{key}}_for_mysql ,
@@ -333,7 +333,7 @@ macro database_model(table, primary_id, columns, use_expire = false)
       raise "Could not get |#{%name}|"
     end
   rescue ex
-    logger.error(ex)
+    logger.error { ex }
   end
 
   def set(%name : Symbol | String, %value : ValTypes)
@@ -349,7 +349,7 @@ macro database_model(table, primary_id, columns, use_expire = false)
       raise "Could not set |#{%name}|"
     end
   rescue ex
-    logger.error(ex)
+    logger.error { ex }
   end
 
   def update_attrs(changes : Hash(String | Symbol, ValTypes))
@@ -371,7 +371,7 @@ macro database_model(table, primary_id, columns, use_expire = false)
   def save
     save!
   rescue ex
-    logger.error(ex)
+    logger.error { ex }
   end
 
   def destroy!
@@ -381,7 +381,7 @@ macro database_model(table, primary_id, columns, use_expire = false)
   def destroy
     destroy!
   rescue ex
-    logger.error(ex)
+    logger.error { ex }
   end
 
   def update!
@@ -394,7 +394,7 @@ macro database_model(table, primary_id, columns, use_expire = false)
   def update
     update!
   rescue ex
-    logger.error(ex)
+    logger.error { ex }
   end
 
   def self.create(**args)
