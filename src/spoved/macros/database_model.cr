@@ -33,12 +33,12 @@ macro database_model(table, primary_id, columns, use_expire = false)
     # Set our class properites here
     property {{name}} : {{val}}
 
-    # Create helper and translation functions
     {% if val.id == "UUID" %}
       def {{name}}=(val : String)
         self.{{name}} = UUID.new(val)
       end
 
+      # :nodoc:
       def _{{name}}_for_mysql
         {{name}}.to_s
       end
@@ -47,10 +47,13 @@ macro database_model(table, primary_id, columns, use_expire = false)
         self.{{name}} = JSON.parse(val)
       end
 
+      # :nodoc:
       def _{{name}}_for_mysql
         {{name}}.to_json
       end
     {% else %}
+
+      # :nodoc:
       def _{{name}}_for_mysql
         {{name}}
       end
