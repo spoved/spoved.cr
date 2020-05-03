@@ -1,4 +1,5 @@
 # spoved
+[![Build Status](https://travis-ci.com/spoved/spoved.cr.svg?branch=master)](https://travis-ci.com/spoved/spoved.cr)
 
 This repository contains shared tools and libraries to help development of crystal libraries easier.
 
