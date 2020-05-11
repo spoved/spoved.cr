@@ -5,6 +5,7 @@ require "uuid/json"
 require "db"
 require "mysql"
 require "../model"
+require "../macros/mysql"
 
 abstract class Spoved::DB::Model::MySQL < Spoved::DB::Model
   alias DataHash = Hash(String, Array(JSON::Any) | Bool | Float64 | Hash(String, JSON::Any) | Int64 | String | Nil)

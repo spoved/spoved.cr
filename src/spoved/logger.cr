@@ -1,20 +1,23 @@
 require "log"
 require "colorize"
 
-macro spoved_logger(level = :debug, io = STDOUT)
+macro spoved_logger(level = :debug, io = STDOUT, bind = false)
   {% if @type.id == "main" %}
-    {% if io.id == "STDOUT" %}
-      ::Log.builder.bind("*", {{level}}, Spoved::ColorizedBackend.new({{io}}))
-    {% else %}
-      ::Log.builder.bind("*", {{level}}, Log::IOBackend.new({{io}}))
+    {% if bind %}
+      {% if io.id == "STDOUT" %}
+        ::Log.builder.bind("*", {{level}}, Spoved::ColorizedBackend.new({{io}}))
+      {% else %}
+        ::Log.builder.bind("*", {{level}}, Log::IOBackend.new({{io}}))
+      {% end %}
     {% end %}
   {% else %}
 
-
-    {% if io.id == "STDOUT" %}
-      ::Log.builder.bind({{@type.id}}.name.underscore.gsub("::", "."), {{level}}, Spoved::ColorizedBackend.new({{io}}) )
-    {% else %}
-      ::Log.builder.bind({{@type.id}}.name.underscore.gsub("::", "."), {{level}}, Log::IOBackend.new({{io}}))
+    {% if bind %}
+      {% if io.id == "STDOUT" %}
+        ::Log.builder.bind({{@type.id}}.name.underscore.gsub("::", "."), {{level}}, Spoved::ColorizedBackend.new({{io}}) )
+      {% else %}
+        ::Log.builder.bind({{@type.id}}.name.underscore.gsub("::", "."), {{level}}, Log::IOBackend.new({{io}}))
+      {% end %}
     {% end %}
 
   @@logger = ::Log.for( {{@type.id}} )
