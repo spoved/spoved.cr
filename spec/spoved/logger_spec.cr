@@ -3,7 +3,7 @@ require "../spec_helper"
 describe Spoved::ColorizedBackend do
   it "should log" do
     io = IO::Memory.new
-    spoved_logger :debug, io
+    spoved_logger :debug, io, bind: true
 
     Log.debug { "this is an debug msg" }
     Log.info { "this is an info msg" }
