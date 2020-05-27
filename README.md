@@ -1,4 +1,5 @@
 # spoved
+
 [![Build Status](https://travis-ci.com/spoved/spoved.cr.svg?branch=master)](https://travis-ci.com/spoved/spoved.cr)
 
 This repository contains shared tools and libraries to help development of crystal libraries easier.
@@ -19,22 +20,7 @@ This repository contains shared tools and libraries to help development of cryst
 
 ### Spoved::Logger
 
-Will colorize your STDOUT logs
-
-```crystal
-require "spoved/logger"
-
-spoved_logger
-
-Log.debug { "this is an debug msg" }
-Log.info { "this is an info msg" }
-Log.warn { "this is an warn msg" }
-Log.error { "this is an error msg" }
-Log.fatal { "this is an fatal msg" }
-Log.unknown { "this is an unknown msg" }
-```
-
-Or you can use the `spoved_logger` to automatically add the logger methods to any class:
+You can use the `spoved_logger` to automatically add the logger methods to any class:
 
 ```crystal
 require "spoved/logger"
@@ -53,7 +39,34 @@ This also adds a class/module level logger:
 require "spoved/logger"
 
 module TestModule
-  spoved_logger level: :debug, io: STDOUT
+  spoved_logger
+end
+
+TestModule.logger.debug { "I can log a module debug now" }
+```
+
+Without the `bind: true` argument it will only create the class/instance methods. When bind is `true` it will call `::Log.builder.bind` and register the IO (`STDOUT` by default) and `Spoved::ColorizedBackend` as the backend.
+
+```crystal
+require "spoved/logger"
+
+spoved_logger(bind: true)
+
+Log.debug { "this is an debug msg" }
+Log.info { "this is an info msg" }
+Log.warn { "this is an warn msg" }
+Log.error { "this is an error msg" }
+Log.fatal { "this is an fatal msg" }
+Log.unknown { "this is an unknown msg" }
+```
+
+Full example:
+
+```crystal
+require "spoved/logger"
+
+module TestModule
+  spoved_logger level: :debug, io: STDOUT, bind: true
 end
 
 TestModule.logger.debug { "I can log a module debug now" }
