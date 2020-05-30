@@ -63,7 +63,7 @@ module Spoved
       when ::Log::Severity::Fatal
         :light_red
       when ::Log::Severity::Verbose
-        :light_gray
+        :light_cyan
       else
         :default
       end
