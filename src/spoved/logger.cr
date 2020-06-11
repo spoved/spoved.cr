@@ -36,39 +36,51 @@ end
 module Spoved
   Log = ::Log.for(self)
 
-  class ColorizedBackend < ::Log::IOBackend
-    private def formater(entry : ::Log::Entry, io : IO)
-      color = ::Spoved::ColorizedBackend.get_color(entry.severity)
-      Colorize.with.colorize(color).surround(io) do
-        default_format(entry)
-      end
-    end
+  ::Log.define_formatter ::Spoved::ColorizedFormat, "#{timestamp} #{severity} - #{source(after: ": ")}#{message}" \
+                                                    "#{data(before: " -- ")}#{context(before: " -- ")}#{exception}"
 
-    def initialize(@io = STDOUT)
-      @mutex = Mutex.new(:unchecked)
-      @progname = File.basename(PROGRAM_NAME)
-      @formatter = ->formater(::Log::Entry, IO)
+  struct ColorizedFormat < ::Log::StaticFormatter
+    # def run
+    #   color = ::Spoved::ColorizedFormat.get_color(severity)
+    #   Colorize.with.colorize(color).surround(@io) do
+    #     super.run
+    #   end
+    # end
+
+    def self.format(entry, io)
+      color = ::Spoved::ColorizedFormat.get_color(entry.severity)
+      Colorize.with.colorize(color).surround(io) do
+        new(entry, io).run
+      end
     end
 
     def self.get_color(severity)
       case severity
-      when ::Log::Severity::Debug
+      when ::Log::Severity::Trace
         :cyan
+      when ::Log::Severity::Debug
+        :blue
       when ::Log::Severity::Info
+        :green
+      when ::Log::Severity::Notice
         :magenta
       when ::Log::Severity::Warn
         :yellow
       when ::Log::Severity::Error
-        :red
-      when ::Log::Severity::Fatal
         :light_red
-      when ::Log::Severity::Notice
-        :light_cyan
-      when ::Log::Severity::Trace
-        :grey
+      when ::Log::Severity::Fatal
+        :red
       else
         :default
       end
+    end
+  end
+
+  class ColorizedBackend < ::Log::IOBackend
+    def initialize(@io = STDOUT)
+      @mutex = Mutex.new(:unchecked)
+      @progname = File.basename(PROGRAM_NAME)
+      @formatter = ColorizedFormat
     end
   end
 end
