@@ -56,14 +56,16 @@ module Spoved
         :cyan
       when ::Log::Severity::Info
         :magenta
-      when ::Log::Severity::Warning
+      when ::Log::Severity::Warn
         :yellow
       when ::Log::Severity::Error
         :red
       when ::Log::Severity::Fatal
         :light_red
-      when ::Log::Severity::Verbose
+      when ::Log::Severity::Notice
         :light_cyan
+      when ::Log::Severity::Trace
+        :grey
       else
         :default
       end
