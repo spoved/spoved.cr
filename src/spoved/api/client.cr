@@ -23,6 +23,7 @@ module Spoved
       property host : String
       property port : Int32?
       property api_path : String = "api/v1"
+      property read_timeout : Int32? = nil
 
       property default_headers : Hash(String, String) = {
         "Content-Type" => "application/json",
@@ -39,7 +40,7 @@ module Spoved
             host: uri.host.as(String),
             port: uri.port,
             scheme: uri.scheme.as(String),
-            args: other
+            **other
           )
           instance
         end
@@ -51,9 +52,16 @@ module Spoved
         @user : String? = nil, @pass : String? = nil,
         @scheme = "https", @api_path = "api/v1",
         tls_verify_mode = OpenSSL::SSL::VerifyMode::PEER,
-        args : NamedTuple? = nil
+        **other
       )
         @tls_client.verify_mode = tls_verify_mode
+        @read_timeout = other[:read_timeout]?
+        @default_headers = other[:default_headers]?.as(Hash(String, String)) if other[:default_headers]?
+
+        if other[:ssl_private_key]?
+          path = File.expand_path(other[:ssl_private_key]?.as(String))
+          tls_client.private_key = path if File.exists?(path)
+        end
       end
 
       # URI helper function
