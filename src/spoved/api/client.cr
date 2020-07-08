@@ -118,10 +118,16 @@ module Spoved
       private def halite
         user = @user
         pass = @pass
-        if !user.nil? && !pass.nil?
-          Halite.basic_auth(user: user, pass: pass)
+        h = if !user.nil? && !pass.nil?
+              Halite.basic_auth(user: user, pass: pass)
+            else
+              Halite::Client.new
+            end
+
+        if read_timeout.nil?
+          h
         else
-          Halite::Client.new
+          h.timeout(read: read_timeout.not_nil!.seconds)
         end
       end
     end
