@@ -2,9 +2,9 @@ module Spoved
   class Api
     class Client
       # Make a PATCH request
-      def patch(path : String, body = "", params : String | Nil = nil)
+      def patch(path : String, body = "", params : String | Nil = nil, klass : Class = JSON::Any)
         resp = patch_raw(path, body, params)
-        resp.body.empty? ? JSON.parse("{}") : resp.parse("json")
+        resp.body.empty? ? klass.from_json("{}") : klass.from_json(resp.body)
       rescue e : JSON::ParseException
         if (!resp.nil?)
           logger.error { "Unable to parse: #{resp.body}" }

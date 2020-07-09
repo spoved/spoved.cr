@@ -2,8 +2,8 @@ module Spoved
   class Api
     class Client
       # Make a GET request
-      def get(path : String, params : Hash(String, String))
-        get(path, format_params(params))
+      def get(path : String, params : Hash(String, String), klass : Class = JSON::Any)
+        get(path, format_params(params), klass)
       end
 
       def stream_get(path : String, params : Hash(String, String))
@@ -22,10 +22,10 @@ module Spoved
       end
 
       # Make a GET request
-      def get(path : String, params : String | Nil = nil)
+      def get(path : String, params : String | Nil = nil, klass : Class = JSON::Any)
         resp = get_raw(path, params)
         if resp.success?
-          resp.body.empty? ? JSON.parse("{}") : resp.parse("json")
+          resp.body.empty? ? klass.from_json("{}") : klass.from_json(resp.body)
         else
           raise Error.new(resp.inspect)
         end

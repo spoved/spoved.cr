@@ -2,9 +2,9 @@ module Spoved
   class Api
     class Client
       # Make a POST request
-      def post(path : String, body = "", params : String | Nil = nil)
+      def post(path : String, body = "", params : String | Nil = nil, klass : Class = JSON::Any)
         resp = post_raw(path, body, params)
-        resp.body.empty? ? JSON.parse("{}") : resp.parse("json")
+        resp.body.empty? ? klass.from_json("{}") : klass.from_json(resp.body)
       rescue e : JSON::ParseException
         if (!resp.nil?)
           logger.error { "Unable to parse: #{resp.body}" }
