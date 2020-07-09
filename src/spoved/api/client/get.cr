@@ -22,8 +22,10 @@ module Spoved
       end
 
       # Make a GET request
-      def get(path : String, params : String | Nil = nil, klass : Class = JSON::Any)
-        resp = get_raw(path, params)
+      def get(path : String, params : String | Nil = nil, klass : Class = JSON::Any,
+              extra_headers : Hash(String, String)? = nil)
+        resp = get_raw(path, params, extra_headers)
+
         if resp.success?
           resp.body.empty? ? klass.from_json("{}") : klass.from_json(resp.body)
         else
@@ -38,8 +40,26 @@ module Spoved
         raise e
       end
 
-      def get_raw(path : String, params : String | Nil = nil)
-        make_request(make_request_uri(path, params))
+      def get_raw(path : String, params : String | Nil = nil, extra_headers : Hash(String, String)? = nil)
+        make_request(make_request_uri(path, params), extra_headers)
+      end
+
+      # Make a request with a string URI
+      private def make_request(path : String, params : String? = nil, extra_headers : Hash(String, String)? = nil)
+        make_request(make_request_uri(path, params), extra_headers)
+      end
+
+      # Make a request with a URI object
+      private def make_request(uri : URI, extra_headers : Hash(String, String)? = nil)
+        self.logger.debug { "GET: #{uri.to_s}" }
+        headers = extra_headers.nil? ? default_headers : default_headers.merge(extra_headers)
+        self.logger.trace { "GET HEADERS: #{headers}" }
+        resp = halite.get(uri.to_s, headers: headers, tls: tls)
+        logger.trace { resp.body }
+        resp
+      rescue e
+        logger.error { e }
+        raise e
       end
     end
   end

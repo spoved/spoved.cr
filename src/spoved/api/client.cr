@@ -95,26 +95,6 @@ module Spoved
         https? ? @tls_client : nil
       end
 
-      # Make a request with a string URI
-      private def make_request(path : String, params : String? = nil)
-        make_request(make_request_uri(path, params))
-      end
-
-      # Make a request with a URI object
-      private def make_request(uri : URI)
-        self.logger.debug { "GET: #{uri.to_s}" }
-        self.logger.debug { "GET: #{default_headers}" }
-
-        resp = halite.get(uri.to_s, headers: default_headers, tls: tls)
-
-        logger.debug { resp.body }
-
-        resp
-      rescue e
-        logger.error { e }
-        raise e
-      end
-
       private def halite
         user = @user
         pass = @pass

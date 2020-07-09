@@ -19,9 +19,11 @@ module Spoved
         make_patch_request(make_request_uri(path, params), body)
       end
 
-      private def make_patch_request(uri : URI, body = "")
+      private def make_patch_request(uri : URI, body = "", extra_headers : Hash(String, String)? = nil)
         self.logger.debug { "PATCH: #{uri.to_s} BODY: #{body}" }
-        resp = halite.patch(uri.to_s, raw: body, headers: default_headers, tls: tls)
+        headers = extra_headers.nil? ? default_headers : default_headers.merge(extra_headers)
+
+        resp = halite.patch(uri.to_s, raw: body, headers: headers, tls: tls)
         logger.debug { resp.body }
         resp
       rescue e

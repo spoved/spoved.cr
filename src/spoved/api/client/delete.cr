@@ -6,9 +6,11 @@ module Spoved
         make_delete_request(make_request_uri(path, params))
       end
 
-      private def make_delete_request(uri : URI)
+      private def make_delete_request(uri : URI, extra_headers : Hash(String, String)? = nil)
         self.logger.debug { "DELETE: #{uri.to_s}" }
-        halite.delete(uri.to_s, headers: default_headers, tls: tls)
+        headers = extra_headers.nil? ? default_headers : default_headers.merge(extra_headers)
+
+        halite.delete(uri.to_s, headers: headers, tls: tls)
       rescue e
         logger.error { e }
         raise e
