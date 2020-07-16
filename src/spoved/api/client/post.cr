@@ -2,6 +2,11 @@ module Spoved
   class Api
     class Client
       # Make a POST request
+      def post(path : String, body = "", params : Hash(String, String) = Hash(String, String).new, klass : Class = JSON::Any,
+               extra_headers : Hash(String, String)? = nil)
+        post(path, body, format_params(params), klass, extra_headers)
+      end
+
       def post(path : String, body = "", params : String | Nil = nil, klass : Class = JSON::Any,
                extra_headers : Hash(String, String)? = nil)
         resp = post_raw(path, body, params, extra_headers)
