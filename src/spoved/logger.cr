@@ -1,46 +1,36 @@
 require "log"
 require "colorize"
 
+macro spoved_bind_logger(level = :debug, io = STDOUT, name = "*")
+  {% if io.id == "STDOUT" %}
+    ::Log.builder.bind({{name}}, {{level}}, Spoved::ColorizedBackend.new({{io}}) )
+  {% else %}
+    ::Log.builder.bind({{name}}, {{level}}, Log::IOBackend.new({{io}}))
+  {% end %}
+end
+
 macro spoved_logger(level = :debug, io = STDOUT, bind = false)
   {% if @type.id == "main" %}
     {% if bind %}
-      {% if io.id == "STDOUT" %}
-        {% if flag?(:preview_mt) %}
-          ::Log.builder.bind("*", {{level}}, Spoved::ColorizedBackendMT.new({{io}}))
-        {% else %}
-          ::Log.builder.bind("*", {{level}}, Spoved::ColorizedBackend.new({{io}}))
-        {% end %}
-      {% else %}
-        ::Log.builder.bind("*", {{level}}, Log::IOBackend.new({{io}}))
-      {% end %}
+      spoved_bind_logger {{level}}, {{io}}
     {% end %}
   {% else %}
 
     {% if bind %}
-      {% if io.id == "STDOUT" %}
-
-        {% if flag?(:preview_mt) %}
-          ::Log.builder.bind({{@type.id}}.name.underscore.gsub("::", "."), {{level}}, Spoved::ColorizedBackendMT.new({{io}}) )
-        {% else %}
-          ::Log.builder.bind({{@type.id}}.name.underscore.gsub("::", "."), {{level}}, Spoved::ColorizedBackend.new({{io}}) )
-        {% end %}
-
-      {% else %}
-        ::Log.builder.bind({{@type.id}}.name.underscore.gsub("::", "."), {{level}}, Log::IOBackend.new({{io}}))
-      {% end %}
+      spoved_bind_logger {{level}}, {{io}}, {{@type.id}}.name.underscore.gsub("::", ".")
     {% end %}
 
-  @@logger = ::Log.for( {{@type.id}} )
+    @@logger = ::Log.for( {{@type.id}} )
 
-  def logger
-    @@logger
-  end
+    def logger
+      @@logger
+    end
 
-  def self.logger
-    @@logger
-  end
+    def self.logger
+      @@logger
+    end
 
-  {% end %}
+  {% end %} # end if @type.id == "main"
 end
 
 module Spoved
@@ -48,9 +38,6 @@ module Spoved
 
   ::Log.define_formatter ::Spoved::ColorizedFormat, "#{timestamp} #{severity} - #{source(after: ": ")}#{message}" \
                                                     "#{data(before: " -- ")}#{context(before: " -- ")}#{exception}"
-
-  ::Log.define_formatter ::Spoved::ColorizedFormatMT, "#{timestamp} #{severity} - #{source(after: ": ")}[#{Fiber.current.name}] #{message}" \
-                                                      "#{data(before: " -- ")}#{context(before: " -- ")}#{exception}"
 
   module ColorizeHelper
     def get_color(severity)
@@ -85,23 +72,11 @@ module Spoved
     extend ColorizeHelper
   end
 
-  struct ColorizedFormatMT < ::Log::StaticFormatter
-    extend ColorizeHelper
-  end
-
   class ColorizedBackend < ::Log::IOBackend
     def initialize(@io = STDOUT)
       @mutex = Mutex.new(:unchecked)
       @progname = File.basename(PROGRAM_NAME)
       @formatter = ColorizedFormat
-    end
-  end
-
-  class ColorizedBackendMT < ::Log::IOBackend
-    def initialize(@io = STDOUT)
-      @mutex = Mutex.new(:unchecked)
-      @progname = File.basename(PROGRAM_NAME)
-      @formatter = ColorizedFormatMT
     end
   end
 end
