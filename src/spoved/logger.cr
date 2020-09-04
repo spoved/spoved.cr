@@ -101,7 +101,7 @@ module Spoved
     def initialize(@io = STDOUT)
       @mutex = Mutex.new(:unchecked)
       @progname = File.basename(PROGRAM_NAME)
-      @formatter = ColorizedFormat
+      @formatter = ColorizedFormatMT
     end
   end
 end
