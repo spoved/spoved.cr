@@ -22,12 +22,13 @@ module Spoved
 
       def put_file(path : String, file : File, extra_headers : Hash(String, String)? = nil)
         uri = make_request_uri(path)
-        self.logger.debug { "PUT FILE: #{uri.to_s}" }
+        self.logger.debug { "PUT FILE: #{uri}" }
 
         headers = HTTP::Headers.new
         (extra_headers.nil? ? default_headers : default_headers.merge(extra_headers)).each do |k, v|
           headers[k] = v
         end
+        self.logger.trace { "PUT HEADERS: #{headers}" }
 
         fio = File.open(file.path)
         resp = HTTP::Client.put(url: uri.to_s, body: fio, headers: headers, tls: tls)
@@ -44,8 +45,9 @@ module Spoved
       def put_form(path : String, form, extra_headers : Hash(String, String)? = nil)
         uri = make_request_uri(path)
         self.logger.debug { "PUT FORM: #{uri.to_s}" }
-
         headers = extra_headers.nil? ? default_headers : default_headers.merge(extra_headers)
+        self.logger.trace { "PUT HEADERS: #{headers}" }
+
         resp = halite.put(uri.to_s, form: form, headers: headers, tls: tls)
 
         logger.trace { resp.body }
