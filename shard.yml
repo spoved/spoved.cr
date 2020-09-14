@@ -17,3 +17,10 @@ development_dependencies:
   ameba:
     github: veelenga/ameba
     version: ~> 0.10.0
+  open-api:
+    github: spoved/open-api.cr
+  epidote:
+    github: spoved/epidote.cr
+    branch: master
+  tablo:
+    github: hutou/tablo
