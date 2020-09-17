@@ -56,8 +56,10 @@ macro register_schema(model)
     Log.notice { "Generating schema {{model.id}}" }
 
     %props = Hash(String, Open::Api::SchemaRef).new
+    %required = Array(String).new
 
     {{model.id}}.attr_types.each do |k, v|
+      %required << k.to_s
       case v
       when UUID.class, BSON::ObjectId.class, String.class, .is_a?(Enum.class)
         %props[k.to_s] = Open::Api::Schema.new("string")
@@ -75,9 +77,12 @@ macro register_schema(model)
         raise "Unable to parse open api type for #{v}"
       end
     end
-    Open::Api.schema_refs[{{model.stringify}}] = Open::Api::Schema.new("object", properties: %props)
+    Open::Api.schema_refs[{{model.stringify}}] = Open::Api::Schema.new(
+        "object",
+        required: %required,
+        properties: %props
+      )
   end
-
 end
 
 def print_routes

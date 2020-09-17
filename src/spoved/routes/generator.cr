@@ -1,10 +1,8 @@
 require "./register"
 
 def limit_offset(env)
-  limit = env.params.query["limit"]?.nil? ? 0 : env.params.query["limit"].to_i
+  limit = env.params.query["limit"]?.nil? ? DEFAULT_LIMIT : env.params.query["limit"].to_i
   offset = env.params.query["offset"]?.nil? ? 0 : env.params.query["offset"].to_i
-
-  limit = DEFAULT_LIMIT if limit.zero?
 
   {limit, offset}
 end
