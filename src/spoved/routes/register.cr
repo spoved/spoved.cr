@@ -6,7 +6,7 @@ end
 
 macro register_route(typ, path, model = nil, filter = nil, multi = false, schema = nil)
   Spoved::SPOVED_ROUTES << [ {{typ}}, {{path}}, {{model ? model.stringify : ""}} ]
-  
+
   %path = {{path}}.gsub(/\:id/, "{id}")
   Log.debug { "Registering route {{model.id}} => {{typ.id}} : #{%path}" }
 
@@ -51,7 +51,7 @@ end
 
 macro register_schema(model)
   Log.info { "Register schema {{model.id}}" }
-  Log.warn { Open::Api.schema_refs.keys }
+  # Log.warn { Open::Api.schema_refs.keys }
   unless Open::Api.schema_refs[{{model.stringify}}]?
     Log.notice { "Generating schema {{model.id}}" }
 
@@ -73,6 +73,8 @@ macro register_schema(model)
         %props[k.to_s] = Open::Api::Schema.new("array", items: Open::Api::Schema.new("object"))
       when Float32.class, Float64.class
         %props[k.to_s] = Open::Api::Schema.new("number")
+      when .is_a?(Hash.class)
+        %props[k.to_s] = Open::Api::Schema.new("object")
       else
         raise "Unable to parse open api type for #{v}"
       end
