@@ -1,18 +1,31 @@
 require "./register"
 
-def limit_offset(env)
+def limit_offset_args(env)
   limit = env.params.query["limit"]?.nil? ? DEFAULT_LIMIT : env.params.query["limit"].to_i
   offset = env.params.query["offset"]?.nil? ? 0 : env.params.query["offset"].to_i
 
   {limit, offset}
 end
 
+def order_by_args(env)
+  order_by = env.params.query["order_by"]?.nil? ? nil : env.params.query["order_by"]
+  if order_by.nil?
+    Array(String).new
+  else
+    order_by.split(',')
+  end
+end
+
 macro crud_routes(model, path, filter = nil, id_class = UUID, formatter = nil, schema = nil)
   Log.notice {"Generating CRUD routes for {{model}}"}
+  {% mysql_type = (model.resolve.ancestors.find { |a| a.id == "Epidote::Model::MySQL" }) %}
 
   register_route("GET", "/api/v1/{{path.id}}", {{model.id}}, {{filter}}, true, {{schema}})
   get "/api/v1/{{path.id}}" do |env|
-    limit, offset = limit_offset(env)
+    limit, offset = limit_offset_args(env)
+    {% if mysql_type %}
+    order_by = order_by_args(env)
+    {% end %}
 
     # Handle querying filter here
     {% if filter %}
@@ -32,6 +45,11 @@ macro crud_routes(model, path, filter = nil, id_class = UUID, formatter = nil, s
       resp_items = {{model}}.query(
         limit: limit,
         offset: offset,
+
+        {% if mysql_type %}
+        order_by: order_by,
+        {% end %}
+
         {% for k, t in filter %}
           {% f = t.gsub(/%/, "_query_#{k}") %}
           {{k}}: _query_{{k}}.nil? ? nil : {{f.id}},

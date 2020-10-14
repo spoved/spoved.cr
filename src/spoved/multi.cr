@@ -20,9 +20,9 @@ module Spoved::Multi(T)
 
   private def _start_worker(name)
     Fiber.current.name = name
-    while running?
+    loop do
       logger.debug { "[#{Fiber.current.name}] Waiting for job" }
-      _job = _jobs_channel.receive?
+      _job = _jobs_channel.receive
       next if _job.nil?
       logger.trace { "[#{Fiber.current.name}][START][#{_job[:id]}] Received job #{_job[:id]}" }
       begin
@@ -32,12 +32,12 @@ module Spoved::Multi(T)
       ensure
         _done_channel.send(nil)
       end
-      self._complete += 1
-      logger.trace { "[#{Fiber.current.name}][DONE][#{_job[:id]}] Jobs complete #{self._complete}/#{self._queued}" }
+      logger.trace { "[#{Fiber.current.name}][DONE][#{_job[:id]}] Job complete" }
     end
   end
 
   private def queue_items(items : Indexable(T), fiber_name = "QueueFiber")
+    self._queued = items.size
     spawn _queue_items(items, fiber_name)
   end
 
@@ -46,7 +46,6 @@ module Spoved::Multi(T)
     logger.info { "[#{Fiber.current.name}] Found #{items.size} items to queue" }
 
     _count = 0
-    self._queued = items.size
     items.each do |_job|
       _count += 1
       _jobs_channel.send({
@@ -69,7 +68,8 @@ module Spoved::Multi(T)
     self._last_print_time = Time.monotonic
     while running?
       _print_job_status
-      _done_channel.receive?
+      _done_channel.receive
+      self._complete += 1
     end
 
     logger.info { "[#{Fiber.current.name}][DONE] Jobs complete #{self._complete}/#{self._queued}" }
