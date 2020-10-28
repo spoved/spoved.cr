@@ -1,3 +1,39 @@
+macro multi_work(ktype, items, work)
+  workers = ENV.fetch("CRYSTAL_WORKERS", "8").to_i
+  done_channel = Channel(Nil).new
+  job_channel = Channel({{ktype}}).new
+
+  workers.times do |i|
+    spawn do
+      Fiber.current.name = "worker-#{i}"
+      loop do
+        begin
+          item = job_channel.receive
+          item.tap &{{work}}
+
+        rescue ex
+          logger.error { ex.message }
+        ensure
+          done_channel.send(nil)
+        end
+      end
+    end
+  end
+
+  spawn do
+    {{items}}.each do |bin|
+      job_channel.send(bin)
+    end
+  end
+
+  count = 0
+  total = {{items}}.size
+  while count < total
+    done_channel.receive
+    count += 1
+  end
+end
+
 module Spoved::Multi(T)
   WORKERS = 4
   private property _jobs_channel = Channel(NamedTuple(id: Int32, data: T)).new
