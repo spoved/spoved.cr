@@ -9,7 +9,11 @@ macro spoved_bind_logger(level = :debug, io = STDOUT, name = "*")
   {% end %}
 end
 
-macro spoved_logger(level = :debug, io = STDOUT, bind = false)
+macro spoved_logger(level = :debug, io = STDOUT, bind = false, clear = false)
+  {% if clear %}
+    Log.builder.clear
+  {% end %}
+
   {% if @type.id == "main" %}
     {% if bind %}
       spoved_bind_logger {{level}}, {{io}}
