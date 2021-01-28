@@ -78,6 +78,7 @@ module Spoved
 
   class ColorizedBackend < ::Log::IOBackend
     def initialize(@io = STDOUT)
+      super()
       @mutex = Mutex.new(:unchecked)
       @progname = File.basename(PROGRAM_NAME)
       @formatter = ColorizedFormat
