@@ -34,13 +34,13 @@ module Spoved
       getter tls_client = OpenSSL::SSL::Context::Client.new
 
       macro inherited
-        def self.new(uri : URI, **other)
+        def self.new(uri : URI, **args)
           instance = {{@type.name.id}}.allocate
           instance.initialize(
+            **args,
             host: uri.host.as(String),
             port: uri.port,
             scheme: uri.scheme.as(String),
-            **other
           )
           instance
         end
