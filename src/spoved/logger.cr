@@ -6,7 +6,7 @@ macro spoved_bind_logger(level = :debug, io = STDOUT, name = "*", dispatcher = :
     ::Log.builder.bind(
       source: {{name}},
       level: ::Log::Severity::{{level.capitalize.id}},
-      backend: Spoved::ColorizedBackend.new( {{io}}, dispatcher: {{dispatcher}} ),
+      backend: Spoved::ColorizedBackend.new( {{io}}, dispatch_mode: {{dispatcher}} ),
     )
   {% else %}
     ::Log.builder.bind(
