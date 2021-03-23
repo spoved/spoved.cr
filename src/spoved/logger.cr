@@ -9,7 +9,6 @@ macro spoved_bind_logger(level = :debug, io = STDOUT, name = "*", dispatcher = :
       backend: Spoved::ColorizedBackend.new( {{io}}, dispatcher: {{dispatcher}} ),
     )
   {% else %}
-    {% debug %}
     ::Log.builder.bind(
       source: {{name}},
       level: ::Log::Severity::{{level.capitalize.id}},
@@ -87,7 +86,7 @@ module Spoved
   end
 
   class ColorizedBackend < ::Log::IOBackend
-    def initialize(@io = STDOUT, dispatch_mode : ::Log::DispatchMode = :async)
+    def initialize(@io = STDOUT, dispatch_mode = :async)
       @dispatcher = ::Log::Dispatcher.for(dispatch_mode)
       @mutex = Mutex.new(:unchecked)
       @progname = File.basename(PROGRAM_NAME)
