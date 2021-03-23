@@ -4,7 +4,7 @@ version: 0.4.1
 authors:
   - Holden Omans <holden.omans@gmail.com>
 
-crystal: 0.36.0
+crystal: 1.0.0
 
 license: MIT
 
@@ -16,7 +16,7 @@ development_dependencies:
     github: spoved/vcr.cr
   ameba:
     github: veelenga/ameba
-    version: ~> 0.13.0
+    # version: ~> 0.13.0
   open-api:
     github: spoved/open-api.cr
   epidote:
@@ -26,4 +26,4 @@ development_dependencies:
     github: hutou/tablo
   commander:
     github: mrrooijen/commander
-    version: ~> 0.3.5
+    # version: ~> 0.3.5
