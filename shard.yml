@@ -4,7 +4,7 @@ version: 0.5.1
 authors:
   - Holden Omans <holden.omans@gmail.com>
 
-crystal: 1.0.0
+crystal: ">= 0.36.1, < 2.0.0"
 
 license: MIT
 
@@ -13,19 +13,16 @@ dependencies:
     # github: icyleaf/halite
     github: kalinon/halite
     branch: patch-1
-# development_dependencies:
-#   vcr:
-#     github: spoved/vcr.cr
-#   ameba:
-#     github: veelenga/ameba
-#     # version: ~> 0.13.0
-#   open-api:
-#     github: spoved/open-api.cr
-#   epidote:
-#     github: spoved/epidote.cr
-#     branch: master
-#   tablo:
-#     github: hutou/tablo
-#   commander:
-#     github: mrrooijen/commander
-#     # version: ~> 0.3.5
+development_dependencies:
+  vcr:
+    github: spoved/vcr.cr
+  ameba:
+    github: veelenga/ameba
+  open-api:
+    github: spoved/open-api.cr
+  epidote:
+    github: spoved/epidote.cr
+  tablo:
+    github: hutou/tablo
+  commander:
+    github: mrrooijen/commander
