@@ -87,7 +87,20 @@ module Spoved
 
   class ColorizedBackend < ::Log::IOBackend
     def initialize(@io = STDOUT, dispatch_mode = :async)
-      @dispatcher = ::Log::Dispatcher.for(dispatch_mode)
+      # : ::Log::DispatchMode
+
+      mode = case dispatch_mode
+             when :async
+               ::Log::DispatchMode::Async
+             when :sync
+               ::Log::DispatchMode::Sync
+             when :direct
+               ::Log::DispatchMode::Direct
+             else
+               ::Log::DispatchMode::Async
+             end
+
+      @dispatcher = ::Log::Dispatcher.for(mode)
       @mutex = Mutex.new(:unchecked)
       @progname = File.basename(PROGRAM_NAME)
       @formatter = ColorizedFormat
