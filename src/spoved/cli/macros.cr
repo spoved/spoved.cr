@@ -11,7 +11,6 @@ macro register_cli_commands
         {% end %}
 
         {% if c.annotation(Spoved::Cli::Command) %}
-          {% puts c %}
           register_command({{c.id}}, "run", "cmd", {{ c.annotation(Spoved::Cli::Command).named_args }})
         {% end %}
       {% end %}
@@ -44,20 +43,33 @@ macro register_sub_commands(klass, cmd)
       register_cmd_flag({{flag}}, %cmd)
       {% end %}
     {% end %}
-  end
 
-  {% for k in c.constants %}
-    {% if k.class? && k.annotation(Spoved::Cli::SubCommand) %}
-    register_sub_commands({{k.id}}, %c)
+    {% for kosn in c.constants %}
+      {% k = c.constant(kosn) %}
+      {% if k.is_a?(TypeNode) && k.class? %}
+        {% if k.annotation(Spoved::Cli::SubCommand) %}
+          register_sub_commands({{k.id}}, %c)
+        {% else %}
+          {% for m in k.methods %}
+            {% if m.annotation(Spoved::Cli::Command) %}
+            register_command({{k.id}}, "{{m.name}}", %c, {{m.annotation(Spoved::Cli::Command).named_args}})
+            {% end %}
+          {% end %}
+        {% end %}
+      {% end %}
     {% end %}
-  {% end %}
+  end
 end
 
 macro register_command(klass, method, cmd, anno)
   {% m = klass.resolve.methods.find { |m| m.name.id == method.id } %}
   {% if m %}
+    {% name = anno[:name].id.gsub(/_/, "-").stringify %}
+    # {% "registering command: #{name.id} for method: #{method}" %}
+
     {{cmd.id}}.commands.add do |%cmd|
-      %cmd.use = {{anno[:name].id.gsub(/_/, "-").stringify}}
+
+      %cmd.use = {{name}}
 
       {% if anno[:descr] %}
         %cmd.short = {{anno[:descr]}}
@@ -76,7 +88,14 @@ macro register_command(klass, method, cmd, anno)
       {% end %}
 
       %cmd.run do |options, arguments|
-        {{klass.id}}.new.{{method.id}}(%cmd, options, arguments)
+        setup_cli(options, arguments)
+        begin
+          {{klass.id}}.new.{{method.id}}(%cmd, options, arguments)
+        rescue ex
+          Log.error { ex.message }
+          puts %cmd.help
+          exit 1
+        end
       end
     end
   {% else %}

@@ -58,13 +58,13 @@ module Spoved::Cli
       ::Log.builder.bind(
         source: "*",
         level: level,
-        backend: ::Spoved::ColorizedBackend.new(STDOUT)
+        backend: ::Spoved::ColorizedBackend.new(STDOUT, dispatch_mode: :sync)
       )
     else
       ::Log.builder.bind(
         source: "*",
         level: level,
-        backend: ::Log::IOBackend.new(File.open(options.string["log_file"], "a"))
+        backend: ::Log::IOBackend.new(File.open(options.string["log_file"], "a"), dispatcher: :sync),
       )
     end
   end

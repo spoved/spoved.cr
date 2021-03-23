@@ -19,6 +19,7 @@ abstract class Spoved::Cli::Main
       register_cli_commands
 
       cmd.run do |options, arguments|
+        setup_cli(options, arguments)
         run(cmd, options, arguments)
       end
     end
@@ -37,8 +38,11 @@ abstract class Spoved::Cli::Main
   end
 end
 
-def cmd_error_help(cmd, msg = "")
-  Log.error { msg } unless msg.empty?
+macro cmd_error_help(msg = "")
+  {% if !msg.empty? %}
+  Log.error { {{msg}} }
+  {% end %}
+
   puts cmd.help
   exit 1
 end

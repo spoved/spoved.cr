@@ -3,9 +3,18 @@ require "colorize"
 
 macro spoved_bind_logger(level = :debug, io = STDOUT, name = "*", dispatcher = :async)
   {% if io.id == "STDOUT" %}
-    ::Log.builder.bind({{name}}, ::Log::Severity::{{level.capitalize.id}}, Spoved::ColorizedBackend.new({{io}}) )
+    ::Log.builder.bind(
+      source: {{name}},
+      level: ::Log::Severity::{{level.capitalize.id}},
+      backend: Spoved::ColorizedBackend.new( {{io}}, dispatcher: {{dispatcher}} ),
+    )
   {% else %}
-    ::Log.builder.bind({{name}}, ::Log::Severity::{{level.capitalize.id}}, ::Log::IOBackend.new({{io}}) )
+    {% debug %}
+    ::Log.builder.bind(
+      source: {{name}},
+      level: ::Log::Severity::{{level.capitalize.id}},
+      backend: ::Log::IOBackend.new( {{io}}, dispatcher: {{dispatcher}} ),
+    )
   {% end %}
 end
 
@@ -16,15 +25,15 @@ macro spoved_logger(level = :debug, io = STDOUT, bind = false, clear = false, di
 
   {% if @type.id == "main" %}
     {% if bind %}
-      spoved_bind_logger {{level}}, {{io}}, dispatcher: {{dispatcher}}
+      spoved_bind_logger({{level}}, {{io}}, dispatcher: {{dispatcher}})
     {% end %}
   {% else %}
 
     {% if bind %}
-      spoved_bind_logger {{level}}, {{io}}, {{@type.id}}.name.underscore.gsub("::", "."), dispatcher: {{dispatcher}}
+      spoved_bind_logger({{level}}, {{io}}, {{@type.id}}.name.underscore.gsub("::", "."), dispatcher: {{dispatcher}})
     {% end %}
 
-    @@logger = ::Log.for( {{@type.id}} )
+    @@logger = ::Log.for({{@type.id}})
 
     def logger
       @@logger
