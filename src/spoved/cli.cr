@@ -2,6 +2,7 @@ module Spoved::Cli::Commands; end
 
 annotation Spoved::Cli::Command; end
 annotation Spoved::Cli::SubCommand; end
+annotation Spoved::Cli::PreRun; end
 
 require "./cli/logging"
 require "./cli/macros"

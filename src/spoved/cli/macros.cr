@@ -1,19 +1,21 @@
 macro setup_cli(options, arguments)
   setup_logging({{options}})
+
+  {% for method in @type.methods %}
+  {% if method.annotation(Spoved::Cli::PreRun) %}
+  {{method.name.id}}(options, arguments)
+  {% end %}
+  {% end %}
 end
 
 macro register_cli_commands
-  {% begin %}
-    {% for sub_c in Spoved::Cli::Main.all_subclasses %}
-      {% for c in Object.all_subclasses %}
-        {% if c.annotation(Spoved::Cli::SubCommand) %}
-          register_sub_commands({{c.id}}, "cmd")
-        {% end %}
+  {% for c in Object.all_subclasses %}
+    {% if c.annotation(Spoved::Cli::SubCommand) %}
+      register_sub_commands({{c.id}}, "cmd")
+    {% end %}
 
-        {% if c.annotation(Spoved::Cli::Command) %}
-          register_command({{c.id}}, "run", "cmd", {{ c.annotation(Spoved::Cli::Command).named_args }})
-        {% end %}
-      {% end %}
+    {% if c.annotation(Spoved::Cli::Command) %}
+      register_command({{c.id}}, "run", "cmd", {{ c.annotation(Spoved::Cli::Command).named_args }})
     {% end %}
   {% end %}
 end
