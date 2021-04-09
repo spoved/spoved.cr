@@ -29,10 +29,10 @@ macro spoved_logger(level = :debug, io = STDOUT, bind = false, clear = false, di
   {% else %}
 
     {% if bind %}
-      spoved_bind_logger({{level}}, {{io}}, {{@type.id}}.name.underscore.gsub("::", "."), dispatcher: {{dispatcher}}, color: {{color}})
+      spoved_bind_logger({{level}}, {{io}}, {{@type.name.id}}.name.underscore.gsub("::", "."), dispatcher: {{dispatcher}}, color: {{color}})
     {% end %}
 
-    @@logger = ::Log.for({{@type.id}})
+    @@logger = ::Log.for({{@type.name.id}})
 
     def logger
       @@logger
