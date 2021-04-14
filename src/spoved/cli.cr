@@ -10,6 +10,10 @@ require "./cli/macros"
 abstract class Spoved::Cli::Main
   include Spoved::Cli
 
+  macro inherited
+    spoved_logger
+  end
+
   abstract def config(cmd : Commander::Command)
 
   def _config

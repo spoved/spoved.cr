@@ -2,8 +2,6 @@ require "../logger"
 require "commander"
 
 module Spoved::Cli
-  spoved_logger
-
   def logging(cmd)
     cmd.flags.add do |flag|
       flag.name = "verbose"

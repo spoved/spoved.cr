@@ -18,7 +18,7 @@ end
 
 macro crud_routes(model, path, filter = nil, id_class = UUID, formatter = nil, schema = nil)
   Log.notice {"Generating CRUD routes for {{model}}"}
-  {% mysql_type = (model.resolve.ancestors.find { |a| a.id == "Epidote::Model::MySQL" }) %}
+  {% mysql_type = (model.resolve.ancestors.find(&.id.==("Epidote::Model::MySQL"))) %}
 
   register_route("GET", "/api/v1/{{path.id}}", {{model.id}}, {{filter}}, true, {{schema}})
   get "/api/v1/{{path.id}}" do |env|

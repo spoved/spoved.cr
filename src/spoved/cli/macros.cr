@@ -2,9 +2,9 @@ macro setup_cli(options, arguments)
   setup_logging({{options}})
 
   {% for method in @type.methods %}
-  {% if method.annotation(Spoved::Cli::PreRun) %}
-  {{method.name.id}}(options, arguments)
-  {% end %}
+    {% if method.annotation(Spoved::Cli::PreRun) %}
+      {{method.name.id}}(options, arguments)
+    {% end %}
   {% end %}
 end
 
@@ -24,6 +24,8 @@ macro register_sub_commands(klass, cmd)
   {% c = klass.resolve %}
   {% anno = c.annotation(Spoved::Cli::SubCommand) %}
   cmd.commands.add do |%c|
+    # logging(%c)
+
     %c.use = {{anno[:name].id.gsub(/_/, "-").stringify}}
 
     {% if anno[:descr] %}
@@ -42,7 +44,7 @@ macro register_sub_commands(klass, cmd)
 
     {% if anno[:flags] %}
       {% for flag in anno[:flags] %}
-      register_cmd_flag({{flag}}, %cmd)
+      register_cmd_flag({{flag}}, %c)
       {% end %}
     {% end %}
 
@@ -64,12 +66,13 @@ macro register_sub_commands(klass, cmd)
 end
 
 macro register_command(klass, method, cmd, anno)
-  {% m = klass.resolve.methods.find { |m| m.name.id == method.id } %}
+  {% m = klass.resolve.methods.find(&.name.id.==(method.id)) %}
   {% if m %}
     {% name = anno[:name].id.gsub(/_/, "-").stringify %}
     # {% "registering command: #{name.id} for method: #{method}" %}
 
     {{cmd.id}}.commands.add do |%cmd|
+      # logging(%cmd)
 
       %cmd.use = {{name}}
 
@@ -95,8 +98,9 @@ macro register_command(klass, method, cmd, anno)
           {{klass.id}}.new.{{method.id}}(%cmd, options, arguments)
         rescue ex
           Log.error { ex.message }
-          puts %cmd.help
-          exit 1
+          raise ex
+          # puts %cmd.help
+          # exit 1
         end
       end
     end
@@ -106,7 +110,7 @@ macro register_command(klass, method, cmd, anno)
 end
 
 macro register_cmd_flag(flag, cmd)
-  cmd.flags.add do |flag|
+  {{cmd}}.flags.add do |flag|
     flag.name = {{flag[:name]}}
     {% if flag[:short] %}
     flag.short = {{flag[:short]}}
