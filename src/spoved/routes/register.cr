@@ -98,8 +98,8 @@ def print_routes
 
     data = Spoved::SPOVED_ROUTES.select(&.last.==(resource))
     table = Tablo::Table.new(data, connectors: Tablo::CONNECTORS_SINGLE_DOUBLE) do |t|
-      t.add_column("Method") { |n| n[0] }
-      t.add_column("Path") { |n| n[1] }
+      t.add_column("Path", &.[0])
+      t.add_column("Path", &.[1])
     end
 
     table.shrinkwrap!
