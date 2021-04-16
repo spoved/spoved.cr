@@ -37,6 +37,14 @@ module Spoved::Cli
       flag.description = "File to save log output."
       flag.persistent = true
     end
+
+    cmd.flags.add do |flag|
+      flag.name = "no_color"
+      flag.long = "--no-color"
+      flag.default = false
+      flag.description = "Disable colorized log output."
+      flag.persistent = true
+    end
   end
 
   def setup_logging(options)
@@ -56,7 +64,7 @@ module Spoved::Cli
       ::Log.builder.bind(
         source: "*",
         level: level,
-        backend: ::Spoved::ColorizedBackend.new(STDOUT, dispatch_mode: :sync)
+        backend: options.bool["no_color"] ? ::Log::IOBackend.new(STDOUT, dispatcher: ::Log::DispatchMode::Sync) : ::Spoved::ColorizedBackend.new(STDOUT, dispatch_mode: :sync)
       )
     else
       ::Log.builder.bind(

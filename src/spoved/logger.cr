@@ -87,8 +87,6 @@ module Spoved
 
   class ColorizedBackend < ::Log::IOBackend
     def initialize(@io = STDOUT, dispatch_mode = :async)
-      # : ::Log::DispatchMode
-
       mode = case dispatch_mode
              when :async
                ::Log::DispatchMode::Async

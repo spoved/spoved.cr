@@ -10,9 +10,10 @@ license: MIT
 
 dependencies:
   halite:
-    # github: icyleaf/halite
-    github: kalinon/halite
-    branch: patch-1
+    github: icyleaf/halite
+    # github: kalinon/halite
+    # branch: patch-1
+
 development_dependencies:
   vcr:
     github: spoved/vcr.cr
