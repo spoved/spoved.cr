@@ -1,3 +1,5 @@
+require "../spoved"
+
 # Module to provide helpers for runnins system commands
 module Spoved::SystemCmd
   # Will execute the provided command and return true/false if it fails.

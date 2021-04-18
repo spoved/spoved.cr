@@ -1,5 +1,6 @@
 require "log"
 require "colorize"
+require "../spoved"
 
 macro spoved_bind_logger(level = :debug, io = STDOUT, name = "*", dispatcher = :async, color = true)
   {% if io.id == "STDOUT" && color %}

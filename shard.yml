@@ -8,22 +8,20 @@ crystal: ">= 0.36.1, < 2.0.0"
 
 license: MIT
 
-dependencies:
-  halite:
-    github: icyleaf/halite
-    # github: kalinon/halite
-    # branch: patch-1
+dependencies: {}
 
 development_dependencies:
-  vcr:
-    github: spoved/vcr.cr
-  ameba:
-    github: veelenga/ameba
-  open-api:
-    github: spoved/open-api.cr
-  epidote:
-    github: spoved/epidote.cr
-  tablo:
-    github: hutou/tablo
-  commander:
-    github: mrrooijen/commander
+  halite:
+    github: icyleaf/halite
+  # vcr:
+  #   github: spoved/vcr.cr
+  # ameba:
+  #   github: veelenga/ameba
+  # open-api:
+  #   github: spoved/open-api.cr
+  # epidote:
+  #   github: spoved/epidote.cr
+  # tablo:
+  #   github: hutou/tablo
+  # commander:
+  #   github: mrrooijen/commander

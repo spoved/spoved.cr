@@ -1,3 +1,5 @@
+require "../spoved"
+
 module Spoved::Cli::Commands; end
 
 # This annotion defines a command that will execute the function it annotates or the method `run`

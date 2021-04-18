@@ -1,3 +1,5 @@
+require "../spoved"
+
 macro multi_work(ktype, items, work)
   workers = ENV.fetch("CRYSTAL_WORKERS", "8").to_i
   done_channel = Channel(Nil).new

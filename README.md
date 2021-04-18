@@ -144,7 +144,6 @@ end
 
 @[Spoved::Cli::Command(name: :dont, descr: "dont do it")]
 class DontDoIt
-  # @[Spoved::Cli::Command(name: :dont, descr: "dont do it")]
   def run(cmd, options, arguments)
     puts "I WONT DO IT!"
   end

@@ -1,4 +1,3 @@
 require "./spoved/version"
 
-module Spoved
-end
+module Spoved; end

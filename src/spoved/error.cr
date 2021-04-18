@@ -1,3 +1,5 @@
+require "../spoved"
+
 module Spoved
   class Error < Exception
   end

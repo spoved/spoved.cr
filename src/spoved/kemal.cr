@@ -1,3 +1,4 @@
+require "../spoved"
 require "./kemal/*"
 
 macro spoved_kemal_server
