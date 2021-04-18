@@ -44,7 +44,7 @@ module Spoved
 
       def put_form(path : String, form, extra_headers : Hash(String, String)? = nil)
         uri = make_request_uri(path)
-        self.logger.debug { "PUT FORM: #{uri.to_s}" }
+        self.logger.debug { "PUT FORM: #{uri}" }
         headers = extra_headers.nil? ? default_headers : default_headers.merge(extra_headers)
         self.logger.trace { "PUT HEADERS: #{headers}" }
 
@@ -59,7 +59,7 @@ module Spoved
       end
 
       private def make_put_request(uri : URI, body = "", extra_headers : Hash(String, String)? = nil)
-        self.logger.debug { "PUT: #{uri.to_s}" }
+        self.logger.debug { "PUT: #{uri}" }
         headers = extra_headers.nil? ? default_headers : default_headers.merge(extra_headers)
         self.logger.trace { "PUT HEADERS: #{headers}" }
         self.logger.trace { "PUT BODY: #{body}" }

@@ -7,7 +7,7 @@ module Spoved
       end
 
       private def make_delete_request(uri : URI, extra_headers : Hash(String, String)? = nil)
-        self.logger.debug { "DELETE: #{uri.to_s}" }
+        self.logger.debug { "DELETE: #{uri}" }
         headers = extra_headers.nil? ? default_headers : default_headers.merge(extra_headers)
         self.logger.trace { "DELETE HEADERS: #{headers}" }
 

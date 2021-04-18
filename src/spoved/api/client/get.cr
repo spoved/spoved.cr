@@ -51,7 +51,7 @@ module Spoved
 
       # Make a request with a URI object
       private def make_request(uri : URI, extra_headers : Hash(String, String)? = nil)
-        self.logger.debug { "GET: #{uri.to_s}" }
+        self.logger.debug { "GET: #{uri}" }
         headers = extra_headers.nil? ? default_headers : default_headers.merge(extra_headers)
         self.logger.trace { "GET HEADERS: #{headers}" }
         resp = halite.get(uri.to_s, headers: headers, tls: tls)

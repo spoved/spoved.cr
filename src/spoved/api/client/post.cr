@@ -26,7 +26,7 @@ module Spoved
       end
 
       private def make_post_request(uri : URI, body = "", extra_headers : Hash(String, String)? = nil)
-        self.logger.debug { "POST: #{uri.to_s}" }
+        self.logger.debug { "POST: #{uri}" }
         headers = extra_headers.nil? ? default_headers : default_headers.merge(extra_headers)
 
         self.logger.trace { "POST HEADERS: #{headers}" }

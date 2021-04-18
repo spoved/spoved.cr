@@ -21,7 +21,7 @@ module Spoved
       end
 
       private def make_patch_request(uri : URI, body = "", extra_headers : Hash(String, String)? = nil)
-        self.logger.debug { "PATCH: #{uri.to_s}" }
+        self.logger.debug { "PATCH: #{uri}" }
         headers = extra_headers.nil? ? default_headers : default_headers.merge(extra_headers)
 
         self.logger.trace { "PATCH HEADERS: #{headers}" }
