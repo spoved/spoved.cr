@@ -1,1 +1,1 @@
-require "../ext/*"
+require "../ext/**"

@@ -1,11 +1,11 @@
 require "open-api"
 
-module Spoved
+module Spoved::Kemal
   SPOVED_ROUTES = Array(Array(String)).new
 end
 
 macro register_route(typ, path, model = nil, filter = nil, multi = false, schema = nil)
-  Spoved::SPOVED_ROUTES << [ {{typ}}, {{path}}, {{model ? model.stringify : ""}} ]
+  Spoved::Kemal::SPOVED_ROUTES << [ {{typ}}, {{path}}, {{model ? model.stringify : ""}} ]
 
   %path = {{path}}.gsub(/\:id/, "{id}")
   Log.debug { "Registering route {{model.id}} => {{typ.id}} : #{%path}" }

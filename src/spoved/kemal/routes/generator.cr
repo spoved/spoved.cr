@@ -16,6 +16,7 @@ def order_by_args(env)
   end
 end
 
+# Generates CRUD routes for `Epidote` models
 macro crud_routes(model, path, filter = nil, id_class = UUID, formatter = nil, schema = nil)
   Log.notice {"Generating CRUD routes for {{model}}"}
   {% mysql_type = (model.resolve.ancestors.find(&.id.==("Epidote::Model::MySQL"))) %}

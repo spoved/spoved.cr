@@ -47,10 +47,9 @@ class String
   # Converts camelcase boundaries to module/klass names.
   #
   # ```
-  # "DoesWhatItSaysOnTheTin".klassify                         # => "Does::What::It::Says::On::The::Tin"
-  # "PartyInTheUSA".klassify                                  # => "Party::In::The::USA"
-  # "HTTP_CLIENT".klassify                                    # => "HTTP::CLIENT"
-  # "InterestingImage".klassify(Unicode::CaseOptions::Turkic) # => "Interesting::Image"
+  # "DoesWhatItSaysOnTheTin".klassify # => "Does::What::It::Says::On::The::Tin"
+  # "PartyInTheUSA".klassify          # => "Party::In::The::USA"
+  # "HTTP_CLIENT".klassify            # => "HTTP::CLIENT"
   # ```
   def klassify
     first = true

@@ -1,4 +1,4 @@
-require "./spoved/*"
+require "./spoved/version"
 
 module Spoved
 end

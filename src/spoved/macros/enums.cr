@@ -1,5 +1,9 @@
 macro enum_from_string(_enum)
   def {{_enum.id}}.new(val : String) : {{_enum.id}}
+    {{_enum.id}}.from_s(val)
+  end
+
+  def {{_enum.id}}.from_s(val : String) : {{_enum.id}}
     case val
     {% for t in _enum.resolve.constants %}
     when {{ t.underscore.downcase.stringify }}, {{ t.downcase.stringify }}
@@ -19,7 +23,10 @@ macro enum_to_const(name, _enum)
   ]
 end
 
+# Creates a `Epidote` converter for the provided enum
 macro enum_converter(e, mysql = false)
+  enum_from_string {{e}}
+
   {% klass = e.resolve %}
   struct ::{{klass.id}}Converter
     def self.to_bson(value)
@@ -38,6 +45,7 @@ macro enum_converter(e, mysql = false)
       value.to_s.downcase.to_json(json)
     end
 
+    {% if mysql %}
     def self.mysql_type
       MySql::Type::String
     end
@@ -49,5 +57,6 @@ macro enum_converter(e, mysql = false)
     def self.from_mysql(str : String) : ::{{klass.id}}
       ::{{klass.id}}.from_s(str)
     end
+    {% end %}
   end
 end
