@@ -1,3 +1,6 @@
+require "http/client"
+require "json"
+
 class HTTP::Client
   def get(url : String, headers = nil, params = nil)
     return super if headers.nil? && params.nil?

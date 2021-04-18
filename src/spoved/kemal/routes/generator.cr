@@ -1,5 +1,15 @@
 require "./register"
 
+def response_data(limit, offset, data, total)
+  {
+    limit:  limit,
+    offset: offset,
+    size:   data.size,
+    total:  total,
+    data:   data,
+  }
+end
+
 def limit_offset_args(env)
   limit = env.params.query["limit"]?.nil? ? DEFAULT_LIMIT : env.params.query["limit"].to_i
   offset = env.params.query["offset"]?.nil? ? 0 : env.params.query["offset"].to_i
