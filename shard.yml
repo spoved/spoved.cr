@@ -13,6 +13,8 @@ dependencies: {}
 development_dependencies:
   halite:
     github: icyleaf/halite
+  bson:
+    github: elbywan/bson.cr
   # vcr:
   #   github: spoved/vcr.cr
   # ameba:
