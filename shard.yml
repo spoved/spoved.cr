@@ -15,6 +15,7 @@ development_dependencies:
     github: icyleaf/halite
   bson:
     github: elbywan/bson.cr
+    branch: master
   # vcr:
   #   github: spoved/vcr.cr
   # ameba:
