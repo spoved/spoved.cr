@@ -107,8 +107,6 @@ macro crud_routes(model, path, filter = nil, id_class = UUID, formatter = nil, s
   end
 
   {% m = model.resolve %}
-
-
   # register_route("PATCH", "/api/v1/{{path.id}}/:id",  {{model.id}})
   patch "/api/v1/{{path.id}}/:id" do |env|
     env.response.content_type = "application/json"
