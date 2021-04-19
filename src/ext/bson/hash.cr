@@ -1,3 +1,7 @@
+require "bson"
+
+# Needed until https://github.com/elbywan/bson.cr/pull/2 is merged
+
 class Hash(K, V)
   def self.from_bson(bson : BSON::Value) : self
     raise "Invalid BSON" unless bson.is_a? BSON
