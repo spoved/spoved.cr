@@ -15,7 +15,7 @@ class Spoved::Kemal::CorsHandler < Kemal::Handler
 
   def send_options(env)
     env.response.headers.add "Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, Cache-Control, Pragma, Expires, X-CSRF-Token"
-    env.response.headers.add "Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE"
+    env.response.headers.add "Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, PATCH"
     env.response.headers.add "Access-Control-Allow-Origin", "*"
   end
 
