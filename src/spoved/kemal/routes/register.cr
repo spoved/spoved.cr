@@ -41,6 +41,13 @@ macro register_route(typ, path, model = nil, filter = nil, multi = false, schema
                     "size"   => Open::Api::Schema.new("integer", default: 0),
                     "total"  => Open::Api::Schema.new("integer", default: 0),
                   },
+                  example: Hash(String, Open::Api::ExampleValue){
+                    "limit"  => 0,
+                    "offset" => 0,
+                    "size"   => 0,
+                    "total"  => 0,
+                    "data" => Array(Open::Api::ExampleValue).new
+                  }
                 )
               },
               key: "data"
@@ -57,28 +64,35 @@ macro register_schema(model)
 
     %props = Hash(String, Open::Api::SchemaRef).new
     %required = Array(String).new
+    %example = Hash(String, Open::Api::ExampleValue).new
 
     {{model.id}}.attr_types.each do |k, v|
       %required << k.to_s
       case v
       when UUID.class, BSON::ObjectId.class, String.class, .is_a?(Enum.class)
         %props[k.to_s] = Open::Api::Schema.new("string")
+        %example[k.to_s] = "string"
       when Int32.class
-        %props[k.to_s] = Open::Api::Schema.new("integer", format: "int32")
+        %props[k.to_s] = Open::Api::Schema.new("integer", format: "int32", example: 0_i32)
+        %example[k.to_s] = 0_i32
       when Int64.class
-        %props[k.to_s] = Open::Api::Schema.new("integer", format: "int64")
+        %props[k.to_s] = Open::Api::Schema.new("integer", format: "int64", example: 0_i64)
+        %example[k.to_s] = 0_i64
       when Bool.class
-        %props[k.to_s] = Open::Api::Schema.new("boolean")
-      when Hash(String, String).class
-        %props[k.to_s] = Open::Api::Schema.new("object")
+        %props[k.to_s] = Open::Api::Schema.new("boolean", example: false)
+        %example[k.to_s] = false
       when .is_a?(Array.class)
         %props[k.to_s] = Open::Api::Schema.new("array", items: Open::Api::Schema.new("object"))
+        %example[k.to_s] = Array(Open::Api::ExampleValue).new
       when Float32.class, Float64.class
-        %props[k.to_s] = Open::Api::Schema.new("number", format: "float")
+        %props[k.to_s] = Open::Api::Schema.new("number", format: "float", example: 0.0_f32)
+        %example[k.to_s] = 0_f32
       when .is_a?(Hash.class)
         %props[k.to_s] = Open::Api::Schema.new("object")
+        %example[k.to_s] = Hash(String, Open::Api::ExampleValue).new
       when .is_a?(Time.class)
-        %props[k.to_s] = Open::Api::Schema.new("string", format: "date-time")
+        %props[k.to_s] = Open::Api::Schema.new("string", format: "date-time", example: Time.utc.to_rfc3339)
+        %example[k.to_s] = Time.utc.to_rfc3339
       else
         raise "Unable to parse open api type for #{v}"
       end
@@ -86,7 +100,8 @@ macro register_schema(model)
     Open::Api.schema_refs[{{model.stringify}}] = Open::Api::Schema.new(
         "object",
         required: %required,
-        properties: %props
+        properties: %props,
+        example: %example,
       )
   end
 end
