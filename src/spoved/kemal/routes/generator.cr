@@ -3,6 +3,8 @@ require "./functions"
 
 # Generates CRUD routes for `Epidote` models
 macro crud_routes(model, path, filter = nil, id_class = UUID, formatter = nil, schema = nil)
+  {% if model.resolve < Epidote::Model %}
+
   Log.notice {"Generating CRUD routes for {{model}}"}
   {% mysql_type = (model.resolve.ancestors.find(&.id.==("Epidote::Model::MySQL"))) %}
 
@@ -107,6 +109,9 @@ macro crud_routes(model, path, filter = nil, id_class = UUID, formatter = nil, s
   end
 
   {% m = model.resolve %}
+  {% if m.constant("ATTR_TYPES") %}
+
+  {% puts "adding patch route for #{model}" %}
   # register_route("PATCH", "/api/v1/{{path.id}}/:id",  {{model.id}})
   patch "/api/v1/{{path.id}}/:id" do |env|
     env.response.content_type = "application/json"
@@ -115,6 +120,7 @@ macro crud_routes(model, path, filter = nil, id_class = UUID, formatter = nil, s
     if r.nil?
       Spoved::Kemal.not_found_resp(env, "Record with id: #{id} not found")
     else
+
      data = Hash(String, {% for key, typ in m.constant("ATTR_TYPES") %}{% if key.id != m.constant("PRIMARY_KEY") %} {{typ}} | {% end %}{% end %} Nil).from_json(
         env.request.body.not_nil!
       )
@@ -134,4 +140,7 @@ macro crud_routes(model, path, filter = nil, id_class = UUID, formatter = nil, s
       Spoved::Kemal.set_content_length(r.to_json, env)
     end
   end
+  {% end %} # end if m.constant("ATTR_TYPES")
+
+  {% else %}{% raise "only support sub classes of Epidote::Model" %}{% end %}
 end

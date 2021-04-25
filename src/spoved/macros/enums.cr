@@ -6,7 +6,7 @@ macro enum_from_string(_enum)
   def {{_enum.id}}.from_s(val : String) : {{_enum.id}}
     case val
     {% for t in _enum.resolve.constants %}
-    when {{ t.underscore.downcase.stringify }}, {{ t.downcase.stringify }}
+    when {{ [t.underscore.downcase.stringify, t.downcase.stringify].uniq.join(", ") }}
       {{t.id}}
     {% end %}
     else
@@ -25,7 +25,9 @@ end
 
 # Creates a `Epidote` converter for the provided enum
 macro enum_converter(e, mysql = false)
+  {% if !e.resolve.class.has_method?("from_s") %}
   enum_from_string {{e}}
+  {% end %}
 
   {% klass = e.resolve %}
   struct ::{{klass.id}}Converter
