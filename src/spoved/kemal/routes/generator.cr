@@ -111,8 +111,7 @@ macro crud_routes(model, path, filter = nil, id_class = UUID, formatter = nil, s
   {% m = model.resolve %}
   {% if m.constant("ATTR_TYPES") %}
 
-  {% puts "adding patch route for #{model}" %}
-  # register_route("PATCH", "/api/v1/{{path.id}}/:id",  {{model.id}})
+  register_route("PATCH", "/api/v1/{{path.id}}/:id",  {{model.id}})
   patch "/api/v1/{{path.id}}/:id" do |env|
     env.response.content_type = "application/json"
     id = env.params.url["id"]
@@ -121,7 +120,7 @@ macro crud_routes(model, path, filter = nil, id_class = UUID, formatter = nil, s
       Spoved::Kemal.not_found_resp(env, "Record with id: #{id} not found")
     else
 
-     data = Hash(String, {% for key, typ in m.constant("ATTR_TYPES") %}{% if key.id != m.constant("PRIMARY_KEY") %} {{typ}} | {% end %}{% end %} Nil).from_json(
+      data = Hash(String, {% for key, typ in m.constant("ATTR_TYPES") %}{% if key.id != m.constant("PRIMARY_KEY") %} {{typ}} | {% end %}{% end %} Nil).from_json(
         env.request.body.not_nil!
       )
       # data = JSON.parse(env.request.body.not_nil!)
@@ -140,6 +139,8 @@ macro crud_routes(model, path, filter = nil, id_class = UUID, formatter = nil, s
       Spoved::Kemal.set_content_length(r.to_json, env)
     end
   end
+  {% else %}
+  {% raise "Unable to generate patch routes. Please define crud_routes last in your app" %}
   {% end %} # end if m.constant("ATTR_TYPES")
 
   {% else %}{% raise "only support sub classes of Epidote::Model" %}{% end %}

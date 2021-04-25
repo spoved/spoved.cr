@@ -4,7 +4,7 @@ module Spoved::Kemal
   SPOVED_ROUTES = Array(Array(String)).new
 end
 
-macro register_route(typ, path, model = nil, filter = nil, multi = false, schema = nil)
+macro register_route(typ, path, model = nil, filter = nil, multi = false, schema = nil, summary = nil, description = nil, tags = nil)
   Spoved::Kemal::SPOVED_ROUTES << [ {{typ}}, {{path}}, {{model ? model.stringify : ""}} ]
 
   %path = {{path}}.gsub(/\:id/, "{id}")
@@ -17,12 +17,15 @@ macro register_route(typ, path, model = nil, filter = nil, multi = false, schema
 
   Open::Api.route_meta[%path] = Hash(String, Open::Api::RouteMetaDatum).new unless Open::Api.route_meta[%path]?
   Open::Api.route_meta[%path][{{opr}}] = Open::Api::RouteMetaDatum{
-            :model => {{model.stringify}},
+            :model => {% if model %} {{model.stringify}} {% else %} nil {% end %} ,
             :opr => {{typ}},
             :path => %path,
             :filter => {% if filter %} {{filter}}.to_h {% else %} Hash(Symbol, String).new {% end %},
             :multi => {{multi}},
             :schema => {% if schema %} {{schema}} {% else %} nil {% end %},
+            :summary => {{summary}},
+            :description => {{description}},
+            :tags => {% if tags %} {{tags}} {% else %} Array(String).new {% end %},
           {% if multi %}
             :wrapper => {
              method: ->(){
