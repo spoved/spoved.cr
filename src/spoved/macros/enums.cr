@@ -24,7 +24,7 @@ macro enum_to_const(name, _enum)
 end
 
 # Creates a `Epidote` converter for the provided enum
-macro enum_converter(e, mysql = false)
+macro enum_converter(e, mysql = false, bson = false, yaml = false)
   {% if !e.resolve.class.has_method?("from_s") %}
   enum_from_string {{e}}
   {% end %}
@@ -58,6 +58,43 @@ macro enum_converter(e, mysql = false)
 
     def self.from_mysql(str : String) : ::{{klass.id}}
       ::{{klass.id}}.from_s(str)
+    end
+    {% end %}
+
+    {% if yaml %}
+    def self.to_yaml(value : ::{{klass.id}})
+      String.build do |io|
+        to_yaml(value, io)
+      end
+    end
+
+    def self.to_yaml(value : ::{{klass.id}}, io : IO)
+      nodes_builder = YAML::Nodes::Builder.new
+      to_yaml(value, nodes_builder)
+
+      # Then we convert the tree to YAML.
+      YAML.build(io) do |builder|
+        nodes_builder.document.to_yaml(builder)
+      end
+    end
+
+    def self.to_yaml(member : ::{{klass.id}}, yaml : YAML::Nodes::Builder)
+      yaml.scalar(member.to_s.downcase)
+    end
+
+
+    def self.new(ctx : YAML::ParseContext, node : YAML::Nodes::Node) : ::{{klass.id}}
+      from_yaml(ctx, node)
+    end
+
+    # Reads a serialized enum member by value from *ctx* and *node*.
+    #
+    # See `.to_yaml` for reference.
+    #
+    # Raises `YAML::ParseException` if the deserialization fails.
+    def self.from_yaml(ctx : YAML::ParseContext, node : YAML::Nodes::Node) : ::{{klass.id}}
+      value = String.new ctx, node
+      ::{{klass.id}}.from_s(value.downcase) || node.raise "Unknown enum ::{{klass.id}} value: #{value}"
     end
     {% end %}
   end
