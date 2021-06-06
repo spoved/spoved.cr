@@ -90,7 +90,7 @@ macro register_schema(model)
       when Float32.class, Float64.class
         %props[k.to_s] = Open::Api::Schema.new("number", format: "float", example: 0.0_f32)
         %example[k.to_s] = 0_f32
-      when .is_a?(Hash.class)
+      when .is_a?(Hash.class), Struct.class
         %props[k.to_s] = Open::Api::Schema.new("object")
         %example[k.to_s] = Hash(String, Open::Api::ExampleValue).new
       when .is_a?(Time.class)
