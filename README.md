@@ -1,6 +1,15 @@
 # spoved
 
-[![Build Status](https://travis-ci.com/spoved/spoved.cr.svg?branch=master)](https://travis-ci.com/spoved/spoved.cr)
+[![build](https://github.com/spoved/spoved.cr/actions/workflows/build.yml/badge.svg)](https://github.com/spoved/spoved.cr/actions/workflows/build.yml)
+
+<p align="center">
+    <a href="https://github.com/spoved/spoved.cr/actions/workflows/build.yml">
+        <img src="https://github.com/spoved/spoved.cr/actions/workflows/build.yml/badge.svg" alt="Build Status"></a>
+    <a href="https://github.com/spoved/spoved.cr/actions/workflows/release.yml">
+        <img src="https://github.com/spoved/spoved.cr/actions/workflows/release.yml/badge.svg" alt="Release Status"></a>
+    <a href="https://github.com/spoved/spoved.cr/releases">
+        <img src="https://img.shields.io/github/v/release/spoved/spoved.cr" alt="Latest release"></a>
+</p>
 
 This repository contains shared tools and libraries to help development of crystal libraries easier.
 
