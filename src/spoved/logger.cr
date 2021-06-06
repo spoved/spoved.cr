@@ -35,11 +35,11 @@ macro spoved_logger(level = :debug, io = STDOUT, bind = false, clear = false, di
 
     @@logger = ::Log.for({{@type.name.id}})
 
-    def logger
+    private def logger
       @@logger
     end
 
-    def self.logger
+    private def self.logger
       @@logger
     end
 
