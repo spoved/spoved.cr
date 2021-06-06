@@ -1,7 +1,5 @@
 # spoved
 
-[![build](https://github.com/spoved/spoved.cr/actions/workflows/build.yml/badge.svg)](https://github.com/spoved/spoved.cr/actions/workflows/build.yml)
-
 <p align="center">
     <a href="https://github.com/spoved/spoved.cr/actions/workflows/build.yml">
         <img src="https://github.com/spoved/spoved.cr/actions/workflows/build.yml/badge.svg" alt="Build Status"></a>
