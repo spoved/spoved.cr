@@ -110,11 +110,11 @@ macro register_schema(model)
 end
 
 def print_routes
-  resources = Spoved::SPOVED_ROUTES.map(&.last).uniq!.sort
+  resources = Spoved::Kemal::SPOVED_ROUTES.map(&.last).uniq!.sort
   resources.each do |resource|
     puts resource
 
-    data = Spoved::SPOVED_ROUTES.select(&.last.==(resource))
+    data = Spoved::Kemal::SPOVED_ROUTES.select(&.last.==(resource))
     table = Tablo::Table.new(data, connectors: Tablo::CONNECTORS_SINGLE_DOUBLE) do |t|
       t.add_column("Path", &.[0])
       t.add_column("Path", &.[1])
