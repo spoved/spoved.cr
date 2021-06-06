@@ -1,4 +1,5 @@
 require "open-api"
+require "tablo"
 
 module Spoved::Kemal
   SPOVED_ROUTES = Array(Array(String)).new
