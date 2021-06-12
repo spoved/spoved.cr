@@ -103,7 +103,7 @@ macro crud_routes(model, path, filter = nil, id_class = UUID, formatter = nil, s
   register_route("PUT", "/api/v1/{{path.id}}", {{model.id}})
   put "/api/v1/{{path.id}}" do |env|
     env.response.content_type = "application/json"
-
+    pp env.request.body.not_nil!
     resp = {{model}}.from_json(env.request.body.not_nil!).save!
     Spoved::Kemal.set_content_length(resp.to_json, env)
   end

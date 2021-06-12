@@ -4,7 +4,7 @@ macro enum_from_string(_enum)
   end
 
   def {{_enum.id}}.from_s(val : String) : {{_enum.id}}
-    case val
+    case val.downcase
     {% for t in _enum.resolve.constants %}
     when {{ [t.underscore.downcase.stringify, t.downcase.stringify].uniq.join(", ") }}
       {{t.id}}
