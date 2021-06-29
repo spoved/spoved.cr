@@ -5,8 +5,8 @@ require "./functions"
 macro crud_routes(model, path, filter = nil, id_class = UUID, formatter = nil, schema = nil)
   {% if model.resolve < Epidote::Model %}
 
-  Log.notice {"Generating CRUD routes for {{model}}"}
-  {% mysql_type = (model.resolve.ancestors.find(&.id.==("Epidote::Model::MySQL"))) %}
+  {% mysql_type = (model.resolve.ancestors.find(&.id.==("Epidote::Model::MySQL"))) ? true : false %}
+  Log.notice &.emit "Generating CRUD routes for {{model}}", mysql_type: {{mysql_type}}
 
   register_route("GET", "/api/v1/{{path.id}}", {{model.id}}, {{filter}}, true, {{schema}})
   get "/api/v1/{{path.id}}" do |env|
@@ -33,13 +33,11 @@ macro crud_routes(model, path, filter = nil, id_class = UUID, formatter = nil, s
 
       # Log.warn { "Query with limit: #{limit}"}
       resp_items = {{model}}.query(
-        limit: limit,
-        offset: offset,
-
+          limit: limit,
+          offset: offset,
         {% if mysql_type %}
-        order_by: order_by,
+          order_by: order_by,
         {% end %}
-
         {% for k, t in filter %}
           {% f = t.gsub(/%/, "_query_#{k}") %}
           {{k}}: _query_{{k}}.nil? ? nil : {{f.id}},
@@ -103,7 +101,7 @@ macro crud_routes(model, path, filter = nil, id_class = UUID, formatter = nil, s
   register_route("PUT", "/api/v1/{{path.id}}", {{model.id}})
   put "/api/v1/{{path.id}}" do |env|
     env.response.content_type = "application/json"
-    pp env.request.body.not_nil!
+    # pp env.request.body.not_nil!
     resp = {{model}}.from_json(env.request.body.not_nil!).save!
     Spoved::Kemal.set_content_length(resp.to_json, env)
   end
