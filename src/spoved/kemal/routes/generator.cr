@@ -128,7 +128,12 @@ macro crud_routes(model, path, filter = nil, id_class = UUID, formatter = nil, s
       # Skip updating primary key
       {% if key.id != m.constant("PRIMARY_KEY") %}
       if data[{{key.id.stringify}}]?
-        patch_data[{{key}}] = data[{{key.id.stringify}}].as({{typ}})
+        if {{model}}::CONVERTERS[:{{key.id}}]? && data[{{key.id.stringify}}].is_a?(String)
+          %val = {{model}}::CONVERTERS.fetch(:{{key.id}}, nil).try &.from_s(data[{{key.id.stringify}}].as(String))
+          patch_data[{{key}}] = %val.as({{typ}})
+        else
+          patch_data[{{key}}] = data[{{key.id.stringify}}].as({{typ}})
+        end
       end
       {% end %}{% end %}
 

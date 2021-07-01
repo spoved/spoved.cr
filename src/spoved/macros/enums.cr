@@ -31,6 +31,10 @@ macro enum_converter(e, mysql = false, bson = false, yaml = false)
 
   {% klass = e.resolve %}
   struct ::{{klass.id}}Converter
+    def self.from_s(value)
+      ::{{klass.id}}.from_s(value)
+    end
+
     def self.to_bson(value)
       value.to_s.downcase
     end
