@@ -11,7 +11,6 @@ macro crud_routes(model, path, filter = nil, id_class = UUID, formatter = nil, s
   register_route("GET", "/api/v1/{{path.id}}", {{model.id}}, {{filter}}, true, {{schema}})
   get "/api/v1/{{path.id}}" do |env|
     env.response.content_type = "application/json"
-
     limit, offset = Spoved::Kemal.limit_offset_args(env)
     {% if mysql_type %}
     order_by = Spoved::Kemal.order_by_args(env)
@@ -19,36 +18,31 @@ macro crud_routes(model, path, filter = nil, id_class = UUID, formatter = nil, s
 
     # Handle querying filter here
     {% if filter %}
-      {% for k, t in filter %}
-        _query_{{k}} = env.params.query["{{k}}"]?
-        # puts " _query_{{k}} : #{ _query_{{k}}}"
-      {% end %}
-      {% query_test = filter.keys.map { |k| "_query_#{k}.nil?" }.join(" && ") %}
-      active_query = !({{query_test.id}})
+      active_query = !(
+        {{ filter.keys.map { |k| "env.params.query[\"#{k}\"]?.nil?" }.join(" && ") }}
+      )
 
-      if(active_query)
-        limit = 0
-        offset = 0
-      end
+      q_params = {
+        {% for k, t in filter %}
+          {{k}}: env.params.query["{{k}}"]?.nil? ? nil : {{t.gsub(/%/, "env.params.query[\"#{k}\"]").id}},
+        {% end %}
+      }
 
       # Log.warn { "Query with limit: #{limit}"}
       resp_items = {{model}}.query(
+          **q_params,
           limit: limit,
           offset: offset,
         {% if mysql_type %}
           order_by: order_by,
         {% end %}
-        {% for k, t in filter %}
-          {% f = t.gsub(/%/, "_query_#{k}") %}
-          {{k}}: _query_{{k}}.nil? ? nil : {{f.id}},
-        {% end %}
       )
 
-      if active_query
-        total = resp_items.size
-      else
-        total = {{model}}.size
-      end
+      total = if active_query
+                {{model}}.size(**q_params)
+              else
+                {{model}}.size
+              end
     {% else %}
       total = {{model}}.size
       resp_items = {{model}}.query(limit: limit, offset: offset)
