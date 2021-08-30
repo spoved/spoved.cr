@@ -13,6 +13,8 @@ dependencies: {}
 development_dependencies:
   halite:
     github: icyleaf/halite
+  swagger:
+    github: icyleaf/swagger
   bson:
     github: elbywan/bson.cr
     branch: master
