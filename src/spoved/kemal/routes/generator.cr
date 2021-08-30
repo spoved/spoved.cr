@@ -3,7 +3,10 @@ require "./functions"
 require "./epidote_gen"
 require "./granite_gen"
 
-# Generates CRUD routes for `Epidote` models
+# :nodoc:
+abstract class ::Epidote::Model; end
+
+# Generates CRUD routes for `Granite` models
 macro crud_routes(model, path, filter = nil, id_class = UUID, formatter = nil, schema = nil)
   {% if model.resolve < Epidote::Model %}
   epidote_gen_routes({{model}}, {{path}}, {{filter}}, {{id_class}}, {{formatter}}, {{schema}})
