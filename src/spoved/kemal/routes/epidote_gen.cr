@@ -1,3 +1,4 @@
+@[Deprecated("Route generator for Epidote ORM is deprecated. Please switch to Granite ORM")]
 macro epidote_gen_routes(model, path, filter = nil, id_class = UUID, formatter = nil, schema = nil)
   {% mysql_type = (model.resolve.ancestors.find(&.id.==("Epidote::Model::MySQL"))) ? true : false %}
   Log.notice &.emit "Generating CRUD routes for {{model}}", mysql_type: {{mysql_type}}
