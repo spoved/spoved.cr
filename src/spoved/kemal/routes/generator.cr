@@ -7,7 +7,7 @@ require "./granite_gen"
 abstract class ::Epidote::Model; end
 
 # Generates CRUD routes for `Granite` models
-macro crud_routes(model, path, filter = nil, id_class = UUID, formatter = nil, schema = nil)
+macro crud_routes(model, path = nil, filter = nil, id_class = UUID, formatter = nil, schema = nil)
   {% if model.resolve < Epidote::Model %}
   epidote_gen_routes({{model}}, {{path}}, {{filter}}, {{id_class}}, {{formatter}}, {{schema}})
   {% elsif model.resolve < Granite::Base %}
