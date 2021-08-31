@@ -1,5 +1,5 @@
 macro register_route(typ, path, model = nil, op_item = nil, summary = nil, schema = nil)
-  Log.notice { "registring route: " + {{path}} }
+  Log.debug { "registring route: " + {{path}} }
   Spoved::Kemal::SPOVED_ROUTES << [ {{typ}}, {{path}}, {{model ? model.stringify : ""}} ]
   %summary = {{summary}}
   %schema = {{schema}}

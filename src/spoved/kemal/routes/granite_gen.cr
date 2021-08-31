@@ -11,7 +11,7 @@ macro granite_gen_routes(_model, path, filter = nil, id_class = UUID, formatter 
 
   %open_api = Spoved::Kemal.open_api
 
-  Log.notice &.emit "Generating CRUD routes for {{model}}"
+  Log.info &.emit "Generating CRUD routes for {{model}}"
   {% primary_key = model.instance_vars.find { |var| var.annotation(Granite::Column) && var.annotation(Granite::Column)[:primary] } %}
   {% columns = [] of MetaVar %}
   {% enum_check = {} of StringLiteral => BoolLiteral %}
@@ -317,7 +317,6 @@ macro granite_gen_routes(_model, path, filter = nil, id_class = UUID, formatter 
           limit, offset = Spoved::Kemal.limit_offset_args(env)
           sort_by, sort_order = Spoved::Kemal.sort_args(env)
           id = env.params.url["{{primary_key.id}}"]
-          {% pp anno %}
           query = {{anno[:target]}}.where({{anno[:foreign_key].id}}: {{id_class}}.new(id))
           # If sort is not specified, sort by provided column
           sort_by.each do |v|
