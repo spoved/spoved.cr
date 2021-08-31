@@ -5,8 +5,10 @@ require "../../ext/string"
 macro granite_gen_routes(_model, path, filter = nil, id_class = UUID, formatter = nil, schema = nil, api_version = 1)
   {% model = _model.resolve %}
   %api_version = "v{{api_version}}"
-  %path = {{path}}.gsub(/\:id/, "{id}")
-  %model_name = {{model.id.stringify}}
+  %model_name = _api_model_name({{model.id}})
+  # %path = {{path}}
+  %path = %model_name
+
   %open_api = Spoved::Kemal.open_api
 
   Log.notice &.emit "Generating CRUD routes for {{model}}"
@@ -43,43 +45,14 @@ macro granite_gen_routes(_model, path, filter = nil, id_class = UUID, formatter 
     {% end %}
   ] of Open::Api::Parameter
 
-  %object_name = {{model.id.downcase.stringify.gsub(/:+/, "_")}}
-  %object = Open::Api::Schema.new(
-    schema_type: "object",
-    required: [
-      {{primary_key.id.stringify}},
-    ],
-    properties: Hash(String, Open::Api::SchemaRef){
-      {{primary_key.id.stringify}} => Open::Api::Schema.new(
-        {% if enum_check[primary_key.id] %}
-        schema_type: "string", format: "string", default: {{primary_key.default_value.id}}.to_s,
-        {% else %}
-        schema_type: Open::Api.get_open_api_type({{primary_key.type}}),
-        format: Open::Api.get_open_api_format({{primary_key.type}}),
-        default: {{primary_key.default_value.id}}
-        {% end %}
-      ),
-      {% for column in columns %}
-      {{column.id.stringify}} => Open::Api::Schema.new(
-        {% if enum_check[column.id] %}
-        schema_type: "string", format: "string", default: {{column.default_value.id}}.to_s,
-        {% else %}
-        schema_type: Open::Api.get_open_api_type({{column.type}}),
-        format: Open::Api.get_open_api_format({{column.type}}),
-        default: {{column.default_value.id}}
-        {% end %}
-      ),
-      {% end %}
-    }
-  )
-
-  %open_api.register_schema(%object_name, %object)
+  %object_name = _api_model_name({{_model}})
+  register_schema({{model}})
   %resp_list_object_name, %resp_list_object = Spoved::Kemal.create_list_schemas(%object_name)
   %open_api.register_schema(%resp_list_object_name, %resp_list_object)
 
   ###### GET List ######
 
-  %get_list_path = "/api/#{%api_version}/#{%path.pluralize}"
+  %get_list_path = "/api/#{%api_version}/#{%path}"
   %open_api.add_path(%get_list_path, Open::Api::Operation::Get,
     item: Spoved::Kemal.create_get_list_op_item(
       model_name: %model_name,
@@ -288,4 +261,84 @@ macro granite_gen_routes(_model, path, filter = nil, id_class = UUID, formatter 
       Spoved::Kemal.set_content_length(item.to_json, env)
     end
   end
+
+  Log.notice {"checking relationships"}
+  # Relationships
+  {% for meth in model.methods %}
+    {% if meth.annotation(Granite::Relationship) %}
+      {% anno = meth.annotation(Granite::Relationship) %}
+      %target_object_name = _api_model_name({{anno[:target]}})
+      register_schema({{anno[:target]}})
+      Log.info {"registering relationship: #{%model_name} -> #{%target_object_name}, type: {{anno[:type]}}"}
+
+      {% if anno[:type] == :has_one || anno[:type] == :belongs_to %}
+        %_path_ = "/api/#{%api_version}/#{%path}/{{{primary_key.id}}}/#{%target_object_name}"
+        %open_api.add_path(%_path_, Open::Api::Operation::Get,
+          item: Spoved::Kemal.create_get_op_item(
+            operation_id: "get_#{%model_name}_#{%target_object_name}",
+            model_name: %model_name,
+            params: [
+              %path_id_param
+            ],
+            resp_ref: %open_api.schema_ref(%target_object_name)
+          )
+        )
+        %_kemal_path = "/api/#{%api_version}/#{%path}/:{{primary_key.id}}/#{%target_object_name}"
+        register_route("GET", %_kemal_path, {{model.id}})
+        get %_kemal_path do |env|
+          env.response.content_type = "application/json"
+          id = env.params.url["{{primary_key.id}}"]
+          item = {{model.id}}.find({{id_class}}.new(id))
+          if item.nil?
+            Spoved::Kemal.not_found_resp(env, "Record with id: #{id} not found")
+          else
+            Spoved::Kemal.set_content_length(item.{{meth.name}}.to_json, env)
+          end
+        end
+
+      {% elsif anno[:type] == :has_many %}
+        %_path_ = "/api/#{%api_version}/#{%path}/{{{primary_key.id}}}/#{%target_object_name.pluralize}"
+        %open_api.add_path(%_path_, Open::Api::Operation::Get,
+          item: Spoved::Kemal.create_get_list_op_item(
+            operation_id: "get_#{%model_name}_#{%target_object_name}_list",
+            model_name: %model_name,
+            params: [
+              Spoved::Kemal.list_req_params,
+              %path_id_param,
+            ].flatten,
+            resp_ref: %open_api.schema_ref(%resp_list_object_name)
+          )
+        )
+
+        %_kemal_path = "/api/#{%api_version}/#{%path}/:{{primary_key.id}}/#{%target_object_name.pluralize}"
+        register_route("GET", %_kemal_path, {{model.id}})
+        get %_kemal_path do |env|
+          env.response.content_type = "application/json"
+          limit, offset = Spoved::Kemal.limit_offset_args(env)
+          sort_by, sort_order = Spoved::Kemal.sort_args(env)
+          id = env.params.url["{{primary_key.id}}"]
+          {% pp anno %}
+          query = {{anno[:target]}}.where({{anno[:foreign_key].id}}: {{id_class}}.new(id))
+          # If sort is not specified, sort by provided column
+          sort_by.each do |v|
+            case v
+            when "{{primary_key.id}}"
+              query.order({{primary_key.id}}: sort_order == "desc" ? :desc : :asc)
+            {% for column in columns %}
+            when "{{column.id}}"
+              query.order({{column.id}}: sort_order == "desc" ? :desc : :asc)
+            {% end %}
+            end
+          end
+
+          total = query.size.run
+          query.offset(offset) if offset > 0
+          query.limit(limit) if limit > 0
+          items = query.select
+          resp = { limit:  limit, offset: offset, size:   items.size, total:  total, items:  items }
+          Spoved::Kemal.set_content_length(resp.to_json, env)
+        end
+      {% end %}
+    {% end %}
+  {% end %}
 end

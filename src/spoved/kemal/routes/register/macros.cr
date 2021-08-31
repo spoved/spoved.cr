@@ -1,4 +1,5 @@
 macro register_route(typ, path, model = nil, op_item = nil, summary = nil, schema = nil)
+  Log.notice { "registring route: " + {{path}} }
   Spoved::Kemal::SPOVED_ROUTES << [ {{typ}}, {{path}}, {{model ? model.stringify : ""}} ]
   %summary = {{summary}}
   %schema = {{schema}}
@@ -19,52 +20,49 @@ macro register_route(typ, path, model = nil, op_item = nil, summary = nil, schem
   end
 end
 
-macro register_schema(model)
-  Log.info { "Register schema {{model.id}}" }
-  # Log.warn { Open::Api.schema_refs.keys }
-  unless Open::Api.schema_refs[{{model.stringify}}]?
-    Log.notice { "Generating schema {{model.id}}" }
+macro _api_model_name(model)
+  {{model.id.stringify.split("::").last.gsub(/:+/, "_").underscore}}
+end
 
-    %props = Hash(String, Open::Api::SchemaRef).new
-    %required = Array(String).new
-    %example = Hash(String, Open::Api::ExampleValue).new
+macro register_schema(_model)
+  {% model = _model.resolve %}
 
-    {{model.id}}.attr_types.each do |k, v|
-      %required << k.to_s
-      case v
-      when UUID.class, BSON::ObjectId.class, String.class, .is_a?(Enum.class)
-        %props[k.to_s] = Open::Api::Schema.new("string")
-        %example[k.to_s] = "string"
-      when Int32.class
-        %props[k.to_s] = Open::Api::Schema.new("integer", format: "int32", example: 0_i32)
-        %example[k.to_s] = 0_i32
-      when Int64.class
-        %props[k.to_s] = Open::Api::Schema.new("integer", format: "int64", example: 0_i64)
-        %example[k.to_s] = 0_i64
-      when Bool.class
-        %props[k.to_s] = Open::Api::Schema.new("boolean", example: false)
-        %example[k.to_s] = false
-      when .is_a?(Array.class)
-        %props[k.to_s] = Open::Api::Schema.new("array", items: Open::Api::Schema.new("object"))
-        %example[k.to_s] = Array(Open::Api::ExampleValue).new
-      when Float32.class, Float64.class
-        %props[k.to_s] = Open::Api::Schema.new("number", format: "float", example: 0.0_f32)
-        %example[k.to_s] = 0_f32
-      when .is_a?(Hash.class), Struct.class
-        %props[k.to_s] = Open::Api::Schema.new("object")
-        %example[k.to_s] = Hash(String, Open::Api::ExampleValue).new
-      when .is_a?(Time.class)
-        %props[k.to_s] = Open::Api::Schema.new("string", format: "date-time", example: Time.utc.to_rfc3339)
-        %example[k.to_s] = Time.utc.to_rfc3339
-      else
-        raise "Unable to parse open api type for #{v}"
-      end
-    end
-    Open::Api.schema_refs[{{model.stringify}}] = Open::Api::Schema.new(
-        "object",
-        required: %required,
-        properties: %props,
-        example: %example,
-      )
+  %object_name = _api_model_name({{_model}})
+  %open_api = Spoved::Kemal.open_api
+
+  if !%open_api.has_schema_ref?(%object_name)
+    Log.info { "Register schema {{model.id}}" }
+
+    {% primary_key = model.instance_vars.find { |var| var.annotation(Granite::Column) && var.annotation(Granite::Column)[:primary] } %}
+    {% columns = [] of MetaVar %}
+    {% enum_check = {} of StringLiteral => BoolLiteral %}
+    {% for var in model.instance_vars %}
+      {% if var.annotation(Granite::Column) %}
+        {% enum_check[var.id] = var.type.union_types.first < Enum %}
+        {% columns << var %}
+      {% end %}
+    {% end %}
+
+    %object = Open::Api::Schema.new(
+      schema_type: "object",
+      required: [
+        {{primary_key.id.stringify}},
+      ],
+      properties: Hash(String, Open::Api::SchemaRef){
+        {% for column in columns %}
+        {{column.id.stringify}} => Open::Api::Schema.new(
+          {% if enum_check[column.id] %}
+          schema_type: "string", format: "string", default: {{column.default_value.id}}.to_s,
+          {% else %}
+          schema_type: Open::Api.get_open_api_type({{column.type}}),
+          format: Open::Api.get_open_api_format({{column.type}}),
+          default: {{column.default_value.id}}
+          {% end %}
+        ),
+        {% end %}
+      }
+    )
+
+    %open_api.register_schema(%object_name, %object)
   end
 end

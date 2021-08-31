@@ -116,9 +116,9 @@ module Spoved::Kemal
     params
   end
 
-  def create_get_list_op_item(model_name, params, resp_ref) : Open::Api::OperationItem
+  def create_get_list_op_item(model_name, params, resp_ref, operation_id : String? = nil) : Open::Api::OperationItem
     Open::Api::OperationItem.new("Returns list of #{model_name}").tap do |op|
-      op.operation_id = "getList#{model_name}"
+      op.operation_id = operation_id.nil? ? "get_#{model_name}_list" : operation_id
       op.tags << model_name
       op.parameters.concat params
       op.responses = Open::Api::OperationItem::Responses{
@@ -131,9 +131,9 @@ module Spoved::Kemal
     end
   end
 
-  def create_get_op_item(model_name, params, resp_ref) : Open::Api::OperationItem
+  def create_get_op_item(model_name, params, resp_ref, operation_id : String? = nil) : Open::Api::OperationItem
     Open::Api::OperationItem.new("Returns record of a specified #{model_name}").tap do |op|
-      op.operation_id = "get#{model_name}ById"
+      op.operation_id = operation_id.nil? ? "get_#{model_name}_by_id" : operation_id
       op.tags << model_name
       op.parameters.concat params
       op.responses = Open::Api::OperationItem::Responses{
@@ -149,7 +149,7 @@ module Spoved::Kemal
   # Create a new delete `Open::Api::OperationItem` for a model
   def create_delete_op_item(model_name, params) : Open::Api::OperationItem
     Open::Api::OperationItem.new("Delete the specified #{model_name}").tap do |op|
-      op.operation_id = "delete#{model_name}ById"
+      op.operation_id = "delete_#{model_name}_by_id"
       op.tags << model_name
       op.parameters.concat params
       op.responses = Open::Api::OperationItem::Responses{
@@ -161,7 +161,7 @@ module Spoved::Kemal
   # Create a new create `Open::Api::OperationItem` for a model
   def create_put_op_item(model_name, model_ref) : Open::Api::OperationItem
     Open::Api::OperationItem.new("Create new #{model_name} record").tap do |op|
-      op.operation_id = "create#{model_name}"
+      op.operation_id = "create_#{model_name}"
       op.tags << model_name
       op.responses = Open::Api::OperationItem::Responses{
         "200" => Open::Api::Response.new("create new #{model_name} record").tap do |resp|
@@ -182,7 +182,7 @@ module Spoved::Kemal
 
   def create_patch_op_item(model_name, params, body_object, model_ref) : Open::Api::OperationItem
     Open::Api::OperationItem.new("Update the specified #{model_name}").tap do |op|
-      op.operation_id = "update#{model_name}ById"
+      op.operation_id = "update_#{model_name}_by_id"
       op.tags << model_name
       op.parameters.concat params
       op.responses = Open::Api::OperationItem::Responses{
