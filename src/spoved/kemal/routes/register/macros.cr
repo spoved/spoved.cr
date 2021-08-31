@@ -1,3 +1,37 @@
+module Spoved::Kemal
+  macro body_schema(_model)
+    Open::Api::Schema.new("object").tap do |schema|
+      {% model = _model.resolve %}
+      {% columns = [] of MetaVar %}
+      {% enum_check = {} of StringLiteral => BoolLiteral %}
+      {% for var in model.instance_vars %}
+        {% if var.annotation(Granite::Column) %}
+          {% enum_check[var.id] = var.type.union_types.first < Enum %}
+          {% if var.annotation(Granite::Column)[:primary] %}
+            # skip the primary key
+          {% elsif var.id == :created_at || var.id == :modified_at %}
+          {% else %}
+            {% columns << var %}
+          {% end %}
+        {% end %}
+      {% end %}
+      schema.properties = Hash(String, Open::Api::SchemaRef){
+        {% for column in columns %}
+        {{column.id.stringify}} => Open::Api::Schema.new(
+          {% if enum_check[column.id] %}
+          schema_type: "string", format: "string", default: {{column.default_value.id}}.to_s,
+          {% else %}
+          schema_type: Open::Api.get_open_api_type({{column.type}}),
+          format: Open::Api.get_open_api_format({{column.type}}),
+          default: {{column.default_value.id}}
+          {% end %}
+        ),
+        {% end %}
+      }
+    end
+  end
+end
+
 macro register_route(typ, path, model = nil, op_item = nil, summary = nil, schema = nil)
   Log.debug { "registring route: " + {{path}} }
   Spoved::Kemal::SPOVED_ROUTES << [ {{typ}}, {{path}}, {{model ? model.stringify : ""}} ]

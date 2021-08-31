@@ -159,7 +159,7 @@ module Spoved::Kemal
   end
 
   # Create a new create `Open::Api::OperationItem` for a model
-  def create_put_op_item(model_name, model_ref) : Open::Api::OperationItem
+  def create_put_op_item(model_name, model_ref, body_schema : Open::Api::Schema) : Open::Api::OperationItem
     Open::Api::OperationItem.new("Create new #{model_name} record").tap do |op|
       op.operation_id = "create_#{model_name}"
       op.tags << model_name
@@ -173,7 +173,7 @@ module Spoved::Kemal
       op.request_body = Open::Api::RequestBody.new(
         description: "#{model_name} object",
         content: {
-          "application/json" => Open::Api::MediaType.new(schema: model_ref),
+          "application/json" => Open::Api::MediaType.new(schema: body_schema),
         },
         required: true,
       )

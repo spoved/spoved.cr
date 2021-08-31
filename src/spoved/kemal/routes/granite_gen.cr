@@ -96,6 +96,9 @@ macro granite_gen_routes(_model, path, filter = nil, id_class = UUID, formatter 
     items = query.select
     resp = { limit:  limit, offset: offset, size:   items.size, total:  total, items:  items }
     Spoved::Kemal.set_content_length(resp.to_json, env)
+  rescue ex
+    Log.error(exception: ex) {ex.message}
+    Spoved::Kemal.resp_400(env, ex.message)
   end
 
   ###### GET By Id ######
@@ -126,6 +129,9 @@ macro granite_gen_routes(_model, path, filter = nil, id_class = UUID, formatter 
     else
       Spoved::Kemal.set_content_length(item.to_json, env)
     end
+  rescue ex
+    Log.error(exception: ex) {ex.message}
+    Spoved::Kemal.resp_400(env, ex.message)
   end
 
   ###### DELETE By Id ######
@@ -151,6 +157,9 @@ macro granite_gen_routes(_model, path, filter = nil, id_class = UUID, formatter 
       item.destroy!
       Spoved::Kemal.resp_204(env)
     end
+  rescue ex
+    Log.error(exception: ex) {ex.message}
+    Spoved::Kemal.resp_400(env, ex.message)
   end
 
 
@@ -159,14 +168,19 @@ macro granite_gen_routes(_model, path, filter = nil, id_class = UUID, formatter 
   %open_api.add_path("/api/#{%api_version}/#{%path}", Open::Api::Operation::Put,
     item: Spoved::Kemal.create_put_op_item(
       model_name: %model_name,
-      model_ref: %open_api.schema_ref(%object_name)
+      model_ref: %open_api.schema_ref(%object_name),
+      body_schema: Spoved::Kemal.body_schema({{model.id}}),
     )
   )
 
   put "/api/#{%api_version}/#{%path}" do |env|
     env.response.content_type = "application/json"
-    resp = {{model}}.from_json(env.request.body.not_nil!).save!
-    Spoved::Kemal.set_content_length(resp.to_json, env)
+    item = {{model}}.from_json(env.request.body.not_nil!)
+    item.save!
+    Spoved::Kemal.set_content_length(item.to_json, env)
+  rescue ex
+    Log.error(exception: ex) {ex.message}
+    Spoved::Kemal.resp_400(env, ex.message)
   end
 
   ###### PATCH ######
@@ -260,16 +274,19 @@ macro granite_gen_routes(_model, path, filter = nil, id_class = UUID, formatter 
       item.save!
       Spoved::Kemal.set_content_length(item.to_json, env)
     end
+  rescue ex
+    Log.error(exception: ex) {ex.message}
+    Spoved::Kemal.resp_400(env, ex.message)
   end
 
-  Log.notice {"checking relationships"}
+  Log.info { "Generating relationship routes for {{model.id}}" }
   # Relationships
   {% for meth in model.methods %}
     {% if meth.annotation(Granite::Relationship) %}
       {% anno = meth.annotation(Granite::Relationship) %}
       %target_object_name = _api_model_name({{anno[:target]}})
       register_schema({{anno[:target]}})
-      Log.info {"registering relationship: #{%model_name} -> #{%target_object_name}, type: {{anno[:type]}}"}
+      Log.debug {"registering relationship: #{%model_name} -> #{%target_object_name}, type: {{anno[:type]}}"}
 
       {% if anno[:type] == :has_one || anno[:type] == :belongs_to %}
         %_path_ = "/api/#{%api_version}/#{%path}/{{{primary_key.id}}}/#{%target_object_name}"
@@ -294,6 +311,9 @@ macro granite_gen_routes(_model, path, filter = nil, id_class = UUID, formatter 
           else
             Spoved::Kemal.set_content_length(item.{{meth.name}}.to_json, env)
           end
+        rescue ex
+          Log.error(exception: ex) {ex.message}
+          Spoved::Kemal.resp_400(env, ex.message)
         end
 
       {% elsif anno[:type] == :has_many %}
@@ -336,6 +356,9 @@ macro granite_gen_routes(_model, path, filter = nil, id_class = UUID, formatter 
           items = query.select
           resp = { limit:  limit, offset: offset, size:   items.size, total:  total, items:  items }
           Spoved::Kemal.set_content_length(resp.to_json, env)
+        rescue ex
+          Log.error(exception: ex) {ex.message}
+          Spoved::Kemal.resp_400(env, ex.message)
         end
       {% end %}
     {% end %}
