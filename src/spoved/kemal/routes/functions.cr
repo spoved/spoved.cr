@@ -79,12 +79,15 @@ module Spoved::Kemal
 
     filter_params.each do |param|
       val = param_filter(param, env)
-      result << val unless val.nil?
+      unless val.nil?
+        result << val
+      end
     end
     result
   end
 
-  private def param_value(param, env)
+  # Fetch the value from the http request
+  private def param_value(param : Open::Api::Parameter, env)
     case param.parameter_in
     when "query"
       env.params.query[param.name]?.nil? ? nil : env.params.query[param.name]
@@ -103,7 +106,8 @@ module Spoved::Kemal
     end
   end
 
-  private def param_filter(param, env) : ParamFilter?
+  # Convert the `Open::Api::Parameter` to a filter struct
+  private def param_filter(param : Open::Api::Parameter, env) : ParamFilter?
     param_name = param.name
     op = :eq
     param_value = param_value(param, env)
@@ -118,6 +122,8 @@ module Spoved::Kemal
     when String
       if op == :in || op == :nin
         param_value = param_value.split(',')
+      elsif op == :like || op == :nlike
+        param_value = "%#{param_value}%"
       end
       {name: param_name, op: op, value: param_value}
     when Bool, Float64, Int64
@@ -127,6 +133,7 @@ module Spoved::Kemal
     end
   end
 
+  # Create a schema object for a list return
   def create_list_schemas(ref_name)
     items_schema = Open::Api::Schema.new(
       schema_type: "array",
@@ -141,7 +148,7 @@ module Spoved::Kemal
         "offset",
         "size",
         "total",
-        "data",
+        "items",
       ],
       properties: Hash(String, Open::Api::SchemaRef){
         "limit"  => Open::Api::Schema.new("integer", default: 0),
@@ -155,10 +162,21 @@ module Spoved::Kemal
         "offset" => 0,
         "size"   => 0,
         "total"  => 0,
-        "data"   => Array(Open::Api::ExampleValue).new,
+        "items"  => Array(Open::Api::ExampleValue).new,
       }
     )
 
     {resp_list_object_name, resp_list_object}
+  end
+
+  def create_patch_body_schemas(model_def) : Open::Api::Schema
+    params = model_def.body_params
+    properties = model_def.properties.select { |k, v| k != "created_at" && k != "created_at" && k != model_def.primary_key }
+
+    Open::Api::Schema.new(
+      schema_type: "object",
+      required: params.select(&.required).map(&.name),
+      properties: properties,
+    )
   end
 end

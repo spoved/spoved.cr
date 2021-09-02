@@ -2,7 +2,7 @@ require "../spoved"
 require "./kemal/*"
 
 macro spoved_kemal_server
-  register_route("OPTIONS", "/*",
+  Spoved::Kemal.register_route("OPTIONS", "/*",
     summary: "CORS Options Return",
     schema: Open::Api::Schema.new("object",
       required: ["msg"],

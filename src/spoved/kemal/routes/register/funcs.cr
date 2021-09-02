@@ -4,9 +4,11 @@ module Spoved::Kemal
   # :nodoc:
   DEFAULT_LIMIT = 100
   # :nodoc:
-  NUM_OPERATORS = %w(:gteq :lteq :neq :gt :lt :nlt :ngt :ltgt)
+  NUM_OPERATORS = %w(:neq :in :nin :gteq :lteq :gt :lt :nlt :ngt :ltgt)
   # :nodoc:
-  STRING_OPERATORS = %w(:in :nin :like :nlike)
+  STRING_OPERATORS = %w(:neq :in :nin :like :nlike)
+  # :nodoc:
+  UUID_OPERATORS = %w(:neq :in :nin)
 
   def open_api : Open::Api
     SWAGGER_API
@@ -98,15 +100,23 @@ module Spoved::Kemal
     register_default_responses
   end
 
-  # :eq, :gteq, :lteq, :neq, :gt, :lt, :nlt, :ngt, :ltgt, :in, :nin, :like, :nlike
+  # Create `Open::Api::Parameter` for the provided column type
   def filter_params_for_var(name, type, **args) : Array(Open::Api::Parameter)
     params = [] of Open::Api::Parameter
     params << Open::Api::Parameter.new(name, type, **args, description: "return results that match #{name}")
 
     case Open::Api.get_open_api_type(type)
     when "string"
-      Spoved::Kemal::STRING_OPERATORS.each do |op|
-        params << Open::Api::Parameter.new(name + "_#{op}", type, **args, description: "return results that are #{op} #{name}")
+      case type
+      when UUID.class, (UUID | Nil).class
+        # Provide specific operators for UUIDs
+        Spoved::Kemal::UUID_OPERATORS.each do |op|
+          params << Open::Api::Parameter.new(name + "_#{op}", type, **args, description: "return results that are #{op} #{name}")
+        end
+      else
+        Spoved::Kemal::STRING_OPERATORS.each do |op|
+          params << Open::Api::Parameter.new(name + "_#{op}", type, **args, description: "return results that are #{op} #{name}")
+        end
       end
     when "integer"
       Spoved::Kemal::NUM_OPERATORS.each do |op|
@@ -199,6 +209,22 @@ module Spoved::Kemal
         },
         required: true,
       )
+    end
+  end
+
+  def register_schema(_model, model_def)
+    if !model_def.open_api.has_schema_ref?(model_def.name)
+      Log.info { "Register schema {{model.id}}" }
+
+      object = Open::Api::Schema.new(
+        schema_type: "object",
+        required: [
+          model_def.primary_key,
+        ],
+        properties: model_def.properties
+      )
+
+      model_def.open_api.register_schema(model_def.name, object)
     end
   end
 end
