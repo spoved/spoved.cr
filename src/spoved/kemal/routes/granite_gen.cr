@@ -104,7 +104,7 @@ macro granite_gen_routes(_model, path = nil, filter = nil, id_class = UUID, form
     )
   )
 
-  delete "/api/#{%api_version}/#{%path}/{#{%model_def.primary_key}}" do |env|
+  delete "/api/#{%api_version}/#{%path}/:#{%model_def.primary_key}" do |env|
     env.response.content_type = "application/json"
     env.response.content_type = "application/json"
     id = env.params.url[%model_def.primary_key]
@@ -135,11 +135,11 @@ macro granite_gen_routes(_model, path = nil, filter = nil, id_class = UUID, form
   put "/api/#{%api_version}/#{%path}" do |env|
     env.response.content_type = "application/json"
 
-    # item = {{model}}.new
-    # values = Spoved::Kemal.param_args(env, %patch_body_params)
-    # %model_def.patch_item.call(item, values)
+    item = {{model}}.new
+    values = Spoved::Kemal.param_args(env, %patch_body_params)
+    %model_def.patch_item.call(item, values)
 
-    item = {{model}}.from_json(env.request.body.not_nil!)
+    # item = {{model}}.from_json(env.request.body.not_nil!)
     item.save!
     Spoved::Kemal.set_content_length(item.to_json, env)
   rescue ex
@@ -161,7 +161,7 @@ macro granite_gen_routes(_model, path = nil, filter = nil, id_class = UUID, form
     )
   )
 
-  patch "/api/#{%api_version}/#{%path}/{#{%model_def.primary_key}}" do |env|
+  patch "/api/#{%api_version}/#{%path}/:#{%model_def.primary_key}" do |env|
     env.response.content_type = "application/json"
     id = env.params.url[%model_def.primary_key]
     Log.notice &.emit "patch {{model.id}}", id: id
