@@ -4,16 +4,19 @@ require "../spoved"
 module Spoved::SystemCmd
   # Will execute the provided command and return true/false if it fails.
   # The command output will also be logged
-  def system_cmd?(command)
-    system_cmd(command)[:status]
+  def system_cmd?(command : String, args = nil, env : Process::Env = nil, clear_env : Bool = false, shell : Bool = false)
+    system_cmd(command, args, env, clear_env, shell)[:status]
   end
 
-  def system_cmd(command)
+  def system_cmd(command : String, args = nil, env : Process::Env = nil, clear_env : Bool = false, shell : Bool = true)
     logger.debug { "Running command : #{command}" }
 
     process = Process.new(
       command,
-      shell: true,
+      args,
+      env,
+      clear_env,
+      shell: shell,
       input: Process::Redirect::Inherit,
       output: Process::Redirect::Pipe,
       error: Process::Redirect::Pipe
