@@ -8,8 +8,12 @@ module Spoved::SystemCmd
     system_cmd(command, args, env, clear_env, shell)[:status]
   end
 
-  def system_cmd(command : String, args = nil, env : Process::Env = nil, clear_env : Bool = false, shell : Bool = true)
-    logger.debug { "Running command : #{command}" }
+  def system_cmd(command : String, args : Array(String)? = nil, env : Process::Env = nil, clear_env : Bool = false, shell : Bool = true)
+    if args
+      logger.debug { "Running command : #{command} #{args.join("")}" }
+    else
+      logger.debug { "Running command : #{command}" }
+    end
 
     process = Process.new(
       command,
