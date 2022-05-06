@@ -1,3 +1,3 @@
 module Spoved
-  VERSION = "0.8.2"
+  VERSION = {{ `shards version "#{__DIR__}"`.chomp.stringify }}
 end
