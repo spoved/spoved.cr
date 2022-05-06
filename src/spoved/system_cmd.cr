@@ -4,7 +4,7 @@ require "../spoved"
 module Spoved::SystemCmd
   # Will execute the provided command and return true/false if it fails.
   # The command output will also be logged
-  def system_cmd?(command : String, args = nil, env : Process::Env = nil, clear_env : Bool = false, shell : Bool = false)
+  def system_cmd?(command : String, args : Array(String)? = nil, env : Process::Env = nil, clear_env : Bool = false, shell : Bool = true)
     system_cmd(command, args, env, clear_env, shell)[:status]
   end
 
