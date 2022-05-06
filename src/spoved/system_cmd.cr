@@ -10,7 +10,7 @@ module Spoved::SystemCmd
 
   def system_cmd(command : String, args : Array(String)? = nil, env : Process::Env = nil, clear_env : Bool = false, shell : Bool = true)
     if args
-      logger.debug { "Running command : #{command} #{args.join("")}" }
+      logger.debug { "Running command : #{command} #{args.join(" ")}" }
     else
       logger.debug { "Running command : #{command}" }
     end
