@@ -76,7 +76,7 @@ module Spoved
       private def format_params(params)
         args = HTTP::Params.build do |form|
           params.each do |k, v|
-            form.add k, v
+            form.add k.to_s, v.to_s
           end
         end
         args

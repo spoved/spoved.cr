@@ -2,11 +2,11 @@ module Spoved
   class Api
     class Client
       # Make a GET request
-      def get(path : String, params : Hash(String, String), klass : Class = JSON::Any)
+      def get(path : String, params = Hash(String, String).new, klass : Class = JSON::Any)
         get(path, format_params(params), klass)
       end
 
-      def stream_get(path : String, params : Hash(String, String))
+      def stream_get(path : String, params = Hash(String, String).new)
         halite.get(make_request_uri(path, format_params(params)).to_s,
           headers: default_headers, tls: tls) do |response|
           spawn do
