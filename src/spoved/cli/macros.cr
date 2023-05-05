@@ -20,13 +20,14 @@ macro register_cli_commands
   {% end %}
 end
 
-macro register_sub_commands(klass, cmd)
+macro register_sub_commands(klass, cmd, parent = nil)
   {% c = klass.resolve %}
   {% anno = c.annotation(Spoved::Cli::SubCommand) %}
+  {{ name = anno[:name].id.gsub(/_/, "-").stringify }}
   cmd.commands.add do |%c|
     # logging(%c)
-
-    %c.use = {{anno[:name].id.gsub(/_/, "-").stringify}}
+    %c.use = {{name}}
+    {% puts "+ sub-cmd: #{name} parent: #{parent}" %}
 
     {% if anno[:descr] %}
       %c.short = {{anno[:descr]}}
@@ -38,7 +39,7 @@ macro register_sub_commands(klass, cmd)
 
     {% for m in c.methods %}
       {% if m.annotation(Spoved::Cli::Command) %}
-      register_command({{c.id}}, {{m.name}}, %c, {{ m.annotation(Spoved::Cli::Command).named_args }})
+      register_command({{c.id}}, {{m.name}}, %c, {{ m.annotation(Spoved::Cli::Command).named_args }}, {{name}})
       {% end %}
     {% end %}
 
@@ -52,11 +53,11 @@ macro register_sub_commands(klass, cmd)
       {% k = c.constant(kosn) %}
       {% if k.is_a?(TypeNode) && k.class? %}
         {% if k.annotation(Spoved::Cli::SubCommand) %}
-          register_sub_commands({{k.id}}, %c)
+          register_sub_commands({{k.id}}, %c, {{name}})
         {% else %}
           {% for m in k.methods %}
             {% if m.annotation(Spoved::Cli::Command) %}
-            register_command({{k.id}}, "{{m.name}}", %c, {{m.annotation(Spoved::Cli::Command).named_args}})
+            register_command({{k.id}}, "{{m.name}}", %c, {{m.annotation(Spoved::Cli::Command).named_args}}, {{name}})
             {% end %}
           {% end %}
         {% end %}
@@ -65,11 +66,11 @@ macro register_sub_commands(klass, cmd)
   end
 end
 
-macro register_command(klass, method, cmd, anno)
+macro register_command(klass, method, cmd, anno, parent = nil)
   {% m = klass.resolve.methods.find(&.name.id.==(method.id)) %}
   {% if m %}
     {% name = anno[:name].id.gsub(/_/, "-").stringify %}
-    # {% "registering command: #{name.id} for method: #{method}" %}
+    {% puts "+ cmd: #{name.id} method: #{method} parent: #{parent}" %}
 
     {{cmd.id}}.commands.add do |%cmd|
       # logging(%cmd)
