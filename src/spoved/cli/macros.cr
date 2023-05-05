@@ -27,7 +27,6 @@ macro register_sub_commands(klass, cmd, parent = nil)
   cmd.commands.add do |%c|
     # logging(%c)
     %c.use = {{name}}
-    {% puts "+ sub-cmd: #{name} parent: #{parent}" %}
 
     {% if anno[:descr] %}
       %c.short = {{anno[:descr]}}
